@@ -1,0 +1,15 @@
+pandas
+numpy
+scikit-learn
+scipy
+transformers
+torch
+streamlit
+plotly
+matplotlib
+joblib
+regex
+tqdm
+jupyter
+sentencepiece
+pytest

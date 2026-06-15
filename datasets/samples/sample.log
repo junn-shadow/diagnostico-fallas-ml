@@ -1,0 +1,90 @@
+2026-05-25 08:00:01 INFO Application server started on port 8080
+2026-05-25 08:00:02 INFO Database connection pool initialized with 10 connections
+2026-05-25 08:00:03 INFO Loading configuration from /etc/app/config.yaml
+2026-05-25 08:00:05 INFO Health check endpoint registered at /health
+2026-05-25 08:00:10 INFO User authentication service ready
+2026-05-25 08:01:15 INFO Incoming request GET /api/users from 192.168.1.50
+2026-05-25 08:01:16 INFO Request processed successfully in 45ms
+2026-05-25 08:02:30 WARNING CPU usage at 78% on worker node-03
+2026-05-25 08:02:31 INFO Autoscaler evaluating current load metrics
+2026-05-25 08:03:00 INFO Scheduled backup job started for database prod_main
+2026-05-25 08:03:45 ERROR Database connection timeout after 30000ms on pool connection 7
+2026-05-25 08:03:46 ERROR Retry attempt 1 of 3 for database connection
+2026-05-25 08:03:50 ERROR Database connection timeout after 30000ms on pool connection 7
+2026-05-25 08:03:51 WARNING Connection pool exhausted: 0 of 10 connections available
+2026-05-25 08:04:00 ERROR Retry attempt 2 of 3 for database connection
+2026-05-25 08:04:05 ERROR SQL query execution failed: SELECT * FROM orders WHERE status = pending
+2026-05-25 08:04:10 CRITICAL Database cluster node-01 unreachable: connection refused on port 5432
+2026-05-25 08:04:11 ERROR Failover triggered to secondary database node-02
+2026-05-25 08:04:15 WARNING Replication lag detected: 12 seconds behind primary
+2026-05-25 08:04:20 INFO Failover to node-02 completed successfully
+2026-05-25 08:05:00 INFO Incoming request POST /api/orders from 192.168.1.55
+2026-05-25 08:05:01 INFO Request processed successfully in 120ms
+2026-05-25 08:06:30 WARNING Disk usage at 89% on volume /data/logs
+2026-05-25 08:06:31 WARNING Log rotation threshold exceeded: 5GB of 6GB used
+2026-05-25 08:07:00 INFO Log rotation initiated for /data/logs/app.log
+2026-05-25 08:07:15 INFO Archived 3 log files totaling 2.1GB
+2026-05-25 08:08:00 ERROR Network timeout connecting to payment gateway api.payments.example.com
+2026-05-25 08:08:01 ERROR Payment processing failed for order ORD-20260525-1847
+2026-05-25 08:08:02 WARNING Transaction rollback initiated for order ORD-20260525-1847
+2026-05-25 08:08:10 INFO Retry payment processing for order ORD-20260525-1847
+2026-05-25 08:08:15 INFO Payment processed successfully on retry attempt 2
+2026-05-25 08:09:00 INFO Incoming request GET /api/reports from 192.168.1.60
+2026-05-25 08:09:05 INFO Cache hit for report dashboard_daily: served from Redis
+2026-05-25 08:10:00 WARNING Memory usage at 82% on application server app-node-02
+2026-05-25 08:10:01 INFO Garbage collection triggered: freed 256MB
+2026-05-25 08:10:30 INFO Incoming request PUT /api/users/1542 from 192.168.1.50
+2026-05-25 08:10:31 INFO User profile updated successfully for user 1542
+2026-05-25 08:11:00 ERROR Disk write failed: read-only filesystem detected on /data/exports
+2026-05-25 08:11:01 CRITICAL Filesystem corruption detected on volume /data/exports
+2026-05-25 08:11:02 ERROR Export job aborted: unable to write to /data/exports/report_20260525.csv
+2026-05-25 08:11:10 WARNING System administrator notified via PagerDuty alert
+2026-05-25 08:12:00 INFO Security scan completed: 0 vulnerabilities found
+2026-05-25 08:12:30 INFO Incoming request DELETE /api/cache/stale from 10.0.0.5
+2026-05-25 08:12:31 INFO Cache eviction completed: 1247 stale entries removed
+2026-05-25 08:13:00 WARNING SSL certificate for api.example.com expires in 7 days
+2026-05-25 08:13:30 INFO Heartbeat check: all 5 microservices responding
+2026-05-25 08:14:00 ERROR Out of memory error in worker process PID 28451
+2026-05-25 08:14:01 CRITICAL Worker process PID 28451 killed by OOM killer
+2026-05-25 08:14:02 ERROR Service degradation: order-processing queue backing up
+2026-05-25 08:14:05 WARNING Queue depth at 2450 messages, threshold is 1000
+2026-05-25 08:14:10 INFO Restarting worker process with increased memory limit 4GB
+2026-05-25 08:14:20 INFO Worker process PID 29102 started successfully
+2026-05-25 08:14:25 INFO Queue drain initiated: processing backlog at 150 msg/sec
+2026-05-25 08:15:00 INFO Incoming request GET /api/products from 192.168.1.70
+2026-05-25 08:15:01 INFO Product catalog served from cache in 12ms
+2026-05-25 08:16:00 ERROR DNS lookup failed for service inventory.internal.local
+2026-05-25 08:16:01 ERROR Inventory service unreachable: connection refused
+2026-05-25 08:16:05 WARNING Circuit breaker opened for inventory-service after 5 failures
+2026-05-25 08:16:10 INFO Serving stale inventory data from local cache (age: 15 minutes)
+2026-05-25 08:17:00 INFO Incoming request POST /api/auth/login from 192.168.1.80
+2026-05-25 08:17:01 WARNING Failed login attempt for user admin@example.com from IP 192.168.1.80
+2026-05-25 08:17:02 WARNING Failed login attempt for user admin@example.com from IP 192.168.1.80
+2026-05-25 08:17:03 WARNING Failed login attempt for user admin@example.com from IP 192.168.1.80
+2026-05-25 08:17:04 ERROR Account locked after 3 failed attempts: admin@example.com
+2026-05-25 08:17:05 WARNING Possible brute force attack detected from IP 192.168.1.80
+2026-05-25 08:17:10 INFO IP 192.168.1.80 added to temporary blocklist for 30 minutes
+2026-05-25 08:18:00 INFO Scheduled health check: all database replicas in sync
+2026-05-25 08:18:30 INFO Incoming request GET /api/dashboard from 192.168.1.50
+2026-05-25 08:18:31 INFO Dashboard data aggregated from 3 sources in 230ms
+2026-05-25 08:19:00 DEBUG Thread pool stats: 12 active, 8 idle, 0 queued
+2026-05-25 08:19:30 INFO Metrics exported to Prometheus endpoint /metrics
+2026-05-25 08:20:00 INFO Incoming request POST /api/webhooks/payment from 10.0.0.100
+2026-05-25 08:20:01 INFO Webhook processed: payment confirmed for order ORD-20260525-1890
+2026-05-25 08:21:00 WARNING Slow query detected: 3200ms for SELECT * FROM analytics WHERE date > 2026-01-01
+2026-05-25 08:21:05 INFO Query optimization suggestion logged for DBA review
+2026-05-25 08:22:00 INFO Nightly ETL pipeline triggered by cron scheduler
+2026-05-25 08:22:30 INFO ETL stage 1/4: extracting 45000 records from source database
+2026-05-25 08:23:00 INFO ETL stage 2/4: transforming records with business rules
+2026-05-25 08:23:30 ERROR ETL stage 3/4: load failed - target table analytics_staging locked
+2026-05-25 08:23:31 WARNING ETL pipeline paused: waiting for lock release on analytics_staging
+2026-05-25 08:24:00 INFO Table lock released on analytics_staging
+2026-05-25 08:24:01 INFO ETL stage 3/4: resumed loading 45000 records
+2026-05-25 08:24:30 INFO ETL stage 4/4: validation completed, 44987 records loaded successfully
+2026-05-25 08:24:31 WARNING 13 records rejected during ETL validation: data format mismatch
+2026-05-25 08:25:00 INFO Application server uptime: 25 minutes, requests served: 1247
+2026-05-25 08:25:01 INFO Average response time: 85ms, P99 latency: 450ms
+2026-05-25 08:25:30 INFO Graceful shutdown initiated for maintenance window
+2026-05-25 08:25:31 INFO Draining active connections: 15 remaining
+2026-05-25 08:25:35 INFO All connections drained, shutting down server
+2026-05-25 08:25:36 INFO Application server stopped cleanly
