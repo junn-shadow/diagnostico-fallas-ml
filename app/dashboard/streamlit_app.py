@@ -44,7 +44,7 @@ def get_distilbert_status():
 
 st.set_page_config(
     page_title="DiagnosticOps ML — Diagnóstico Inteligente de Fallas",
-    page_icon="🔬",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -55,7 +55,6 @@ with st.sidebar:
         """
         <a href="/" target="_self" class="sidebar-brand-link" style="text-decoration: none;">
             <div class="sidebar-brand">
-                <div class="sidebar-brand-icon">🔬</div>
                 <span class="sidebar-brand-text">DiagnosticOps</span>
             </div>
         </a>
@@ -232,10 +231,10 @@ if st.session_state.get("is_historical_view", False) and "last_result" in st.ses
 
 
 with st.sidebar:
-    uploaded = st.file_uploader("📂 Fuente de logs", type=["log", "txt"])
-    use_sample = st.toggle("🧪 Usar dataset de muestra", value=uploaded is None)
-    persist = st.toggle("💾 Persistir incidentes", value=True)
-    auto_run = st.toggle("⚡ Analizar al cargar", value=False)
+    uploaded = st.file_uploader("Fuente de logs", type=["log", "txt"])
+    use_sample = st.toggle("Usar dataset de muestra", value=uploaded is None)
+    persist = st.toggle("Persistir incidentes", value=True)
+    auto_run = st.toggle("Analizar al cargar", value=False)
 
     st.divider()
     st.markdown(
@@ -251,14 +250,14 @@ with st.sidebar:
         help="Proporción estimada de eventos anómalos. Determina el umbral de decisión del algoritmo Isolation Forest para clasificar un log como anomalía.",
     )
     clustering_method = st.selectbox(
-        "🧩 Método de Agrupamiento",
+        "Método de Agrupamiento",
         options=["auto", "dbscan", "kmeans"],
         index=0,
         help="Selecciona el algoritmo de machine learning para agrupar las anomalías. 'auto' selecciona el más óptimo según el tamaño y dispersión de los datos.",
     )
-    with st.expander("🛠️ Parámetros del Clustering"):
+    with st.expander("Parámetros del Clustering"):
         clustering_eps = st.slider(
-            "📏 DBSCAN Epsilon",
+            "DBSCAN Epsilon",
             min_value=0.05,
             max_value=2.00,
             value=0.80,
@@ -266,7 +265,7 @@ with st.sidebar:
             help="Distancia máxima (métrica del coseno en espacio de embeddings) entre dos muestras para considerarlas en el mismo vecindario (DBSCAN).",
         )
         clustering_min_samples = st.slider(
-            "🔢 DBSCAN Min Samples",
+            "DBSCAN Min Samples",
             min_value=1,
             max_value=10,
             value=2,
@@ -274,7 +273,7 @@ with st.sidebar:
             help="Número mínimo de muestras en un vecindario para que un punto sea considerado como punto central en el algoritmo DBSCAN.",
         )
         clustering_n_clusters = st.slider(
-            "🌀 Clusters K (K-Means)",
+            "Clusters K (K-Means)",
             min_value=2,
             max_value=20,
             value=5,
@@ -288,7 +287,7 @@ with st.sidebar:
     )
 
     nlp_backend = st.selectbox(
-        "🧠 Backend NLP",
+        "Backend NLP",
         options=["auto", "tfidf", "distilbert"],
         format_func=lambda x: {
             "auto": "Auto (mejor disponible)",
@@ -303,13 +302,13 @@ with st.sidebar:
     model_status = get_distilbert_status()
     if model_status.available_remote:
         _pill_cls = "connected"
-        _pill_txt = "● DistilBERT Remoto"
+        _pill_txt = "DistilBERT Remoto"
     elif model_status.available_locally:
         _pill_cls = "connected"
-        _pill_txt = "● DistilBERT Local"
+        _pill_txt = "DistilBERT Local"
     else:
         _pill_cls = "fallback"
-        _pill_txt = "● TF-IDF (fallback)"
+        _pill_txt = "TF-IDF (fallback)"
     st.markdown(
         f'<div class="nlp-status-pill {_pill_cls}">{_pill_txt}</div>',
         unsafe_allow_html=True,
@@ -317,7 +316,7 @@ with st.sidebar:
 
     st.markdown("<br>", unsafe_allow_html=True)
     run_button = st.button(
-        "▶ Ejecutar diagnóstico", type="primary", use_container_width=True
+        "Ejecutar diagnóstico", type="primary", use_container_width=True
     )
 
 
@@ -406,17 +405,16 @@ if should_run:
     st.session_state["is_historical_view"] = False
 
 
-# ---------------------------------------------------------
 # RENDERIZADO DE PESTAÑAS (SIEMPRE VISIBLES)
 # ---------------------------------------------------------
 tab_overview, tab_alerts, tab_root, tab_patterns, tab_data, tab_history = st.tabs(
     [
-        "📊 Resumen",
-        "🚨 Alertas",
-        "🧠 Causa Raíz",
-        "🔬 Patrones",
-        "🗂 Explorador",
-        "🗄️ Historial",
+        "Resumen",
+        "Alertas",
+        "Causa Raíz",
+        "Patrones",
+        "Explorador",
+        "Historial",
     ]
 )
 
@@ -799,7 +797,7 @@ else:
 
 with tab_history:
     render_breadcrumb("Historial")
-    st.subheader("🗄️ Historial de Diagnósticos Guardados")
+    st.subheader("Historial de Diagnósticos Guardados")
     st.markdown(
         '<p class="section-note">Explora análisis anteriores guardados en la base de datos local SQLite. Puedes inspeccionar las alertas, descargar sus reportes o eliminar registros antiguos.</p>',
         unsafe_allow_html=True,
@@ -946,9 +944,8 @@ with tab_history:
                                 "Todos los patrones de error de la Ejecución A siguen ocurriendo en la Ejecución B."
                             )
             else:
-                # Vista Individual con pestañas para inspección o búsqueda global
                 view_tab1, view_tab2 = st.tabs(
-                    ["📂 Inspeccionar Ejecución", "🔎 Buscador Global en Historial"]
+                    ["Inspeccionar Ejecución", "Buscador Global en Historial"]
                 )
 
                 with view_tab1:
@@ -980,7 +977,7 @@ with tab_history:
                     )
                     
                     # Mostrar detalles de incidentes
-                    with st.expander("🔎 Incidentes del Run Seleccionado"):
+                    with st.expander("Incidentes del Run Seleccionado"):
                         if not hist_incidents.empty:
                             render_anomalies(hist_incidents)
                         else:
@@ -988,7 +985,7 @@ with tab_history:
 
                     # Botón para restaurar la ejecución en el dashboard principal
                     if st.button(
-                        "📂 Cargar esta ejecución en el Dashboard Principal",
+                        "Cargar esta ejecución en el Dashboard Principal",
                         key=f"restore_btn_{sel_run_id}",
                         type="primary",
                         use_container_width=True,
@@ -1221,13 +1218,13 @@ with tab_history:
 
                     # Opción para eliminar
                     st.divider()
-                    st.markdown("##### ⚠️ Zona de Peligro")
+                    st.markdown("##### Zona de Peligro")
                     del_confirm = st.checkbox(
                         "Confirmar que deseo eliminar esta ejecución de la base de datos de manera permanente",
                         key=f"del_conf_{sel_run_id}",
                     )
                     if st.button(
-                        "🗑️ Eliminar ejecución de la Base de Datos",
+                        "Eliminar ejecución de la Base de Datos",
                         type="primary",
                         disabled=not del_confirm,
                         key=f"del_btn_{sel_run_id}",
@@ -1240,7 +1237,7 @@ with tab_history:
 
                 with view_tab2:
                     st.markdown(
-                        "##### 🔎 Buscar incidentes en todo el historial SQLite"
+                        "##### Buscar incidentes en todo el historial"
                     )
                     q_global = st.text_input(
                         "Término de búsqueda (Ej: Connection, Exception, Error)",
