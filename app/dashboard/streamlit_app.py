@@ -973,7 +973,7 @@ with tab_history:
                     # Mostrar métricas del run seleccionado
                     h_col1, h_col2, h_col3, h_col4 = st.columns(4)
                     h_col1.metric("Archivo Analizado", sel_source)
-                    h_col2.metric("Fecha de Ejecución", sel_created)
+                    h_col2.metric("Fecha de Ejecución", str(sel_created))
                     h_col3.metric("Anomalías Guardadas", summary_db["anomalies"])
                     h_col4.metric(
                         "Errores/Críticos Guardados", summary_db["errors"]
@@ -1000,10 +1000,11 @@ with tab_history:
                         with st.spinner("Cargando ejecución histórica desde la base de datos..."):
                             with get_connection() as conn:
                                 import pandas as pd
+                                import sqlalchemy as sa
                                 restore_df = pd.read_sql_query(
-                                    "SELECT * FROM incidents WHERE run_id = ? ORDER BY line_id ASC",
+                                    sa.text("SELECT * FROM incidents WHERE run_id = :run_id ORDER BY line_id ASC"),
                                     conn,
-                                    params=(sel_run_id,),
+                                    params={"run_id": sel_run_id},
                                 )
 
                         if "clean_log" not in restore_df.columns:
@@ -1073,10 +1074,11 @@ with tab_history:
                                 from app.database.connection import get_connection
                                 with get_connection() as conn:
                                     import pandas as pd
+                                    import sqlalchemy as sa
                                     full_hist_incidents = pd.read_sql_query(
-                                        "SELECT * FROM incidents WHERE run_id = ? ORDER BY line_id ASC",
+                                        sa.text("SELECT * FROM incidents WHERE run_id = :run_id ORDER BY line_id ASC"),
                                         conn,
-                                        params=(sel_run_id,),
+                                        params={"run_id": sel_run_id},
                                     )
 
                                 # Emular un objeto de resultado simplificado para el generador de reportes
@@ -1288,4 +1290,4 @@ with tab_history:
                             "Escribe un término arriba para realizar una consulta global en la base de datos local."
                         )
     except Exception as exc:
-        st.warning(f"Error al interactuar con el historial SQLite: {exc}")
+        st.warning(f"Error al interactuar con el historial Supabase: {exc}")

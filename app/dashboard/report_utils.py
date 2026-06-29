@@ -8,16 +8,17 @@ def generate_report(format: str = "csv", run_id: str | None = None) -> bytes:
     Obtiene los datos de la base de datos para una ejecución específica (o todos)
     y devuelve un flujo de bytes en el formato solicitado ('csv', 'json', 'xlsx').
     """
+    import sqlalchemy as sa
     with get_connection() as conn:
         if run_id:
             df = pd.read_sql_query(
-                "SELECT * FROM incidents WHERE run_id = ? ORDER BY line_id ASC",
+                sa.text("SELECT * FROM incidents WHERE run_id = :run_id ORDER BY line_id ASC"),
                 conn,
-                params=(run_id,),
+                params={"run_id": run_id},
             )
         else:
             df = pd.read_sql_query(
-                "SELECT * FROM incidents ORDER BY created_at DESC", conn
+                sa.text("SELECT * FROM incidents ORDER BY created_at DESC"), conn
             )
 
     if df.empty:

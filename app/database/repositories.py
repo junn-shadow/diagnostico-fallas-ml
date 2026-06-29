@@ -31,7 +31,25 @@ def save_incidents(
     incidents["log_source"] = log_source
     incidents["run_id"] = run_id or "unknown"
 
+    import sqlalchemy as sa
     with get_connection() as conn:
+        # Eliminar ejecuciones anteriores de la misma fuente de datos (log_source)
+        # para no ocupar espacio innecesario en Supabase
+        if log_source and log_source != "unknown":
+            conn.execute(
+                sa.text("DELETE FROM incidents WHERE log_source = :log_source"),
+                {"log_source": log_source}
+            )
+            # También limpiamos los logs crudos asociados a esa fuente si los hay
+            try:
+                conn.execute(
+                    sa.text("DELETE FROM raw_logs WHERE source = :log_source"),
+                    {"log_source": log_source}
+                )
+            except Exception:
+                pass
+            conn.commit()
+
         incidents[INCIDENT_COLUMNS].to_sql(
             "incidents", conn, if_exists="append", index=False
         )
@@ -40,18 +58,19 @@ def save_incidents(
 
 def list_incidents(run_id: str | None = None, limit: int = 200) -> pd.DataFrame:
     init_db()
+    import sqlalchemy as sa
     with get_connection() as conn:
         if run_id:
             return pd.read_sql_query(
-                "SELECT * FROM incidents WHERE run_id = ? ORDER BY line_id ASC LIMIT ?",
+                sa.text("SELECT * FROM incidents WHERE run_id = :run_id ORDER BY line_id ASC LIMIT :limit"),
                 conn,
-                params=(run_id, limit),
+                params={"run_id": run_id, "limit": limit},
             )
         else:
             return pd.read_sql_query(
-                "SELECT * FROM incidents ORDER BY created_at DESC LIMIT ?",
+                sa.text("SELECT * FROM incidents ORDER BY created_at DESC LIMIT :limit"),
                 conn,
-                params=(limit,),
+                params={"limit": limit},
             )
 
 
@@ -81,8 +100,9 @@ def delete_run(run_id: str) -> None:
     Elimina los registros correspondientes a una ejecución (run_id).
     """
     init_db()
+    import sqlalchemy as sa
     with get_connection() as conn:
-        conn.execute("DELETE FROM incidents WHERE run_id = ?", (run_id,))
+        conn.execute(sa.text("DELETE FROM incidents WHERE run_id = :run_id"), {"run_id": run_id})
         conn.commit()
 
 
@@ -91,16 +111,17 @@ def search_all_incidents(query: str, limit: int = 500) -> pd.DataFrame:
     Realiza una búsqueda global por palabra clave sobre todos los incidentes del historial.
     """
     init_db()
+    import sqlalchemy as sa
     with get_connection() as conn:
         q = f"%{query}%"
         return pd.read_sql_query(
-            """
+            sa.text("""
             SELECT * FROM incidents 
-            WHERE raw_log LIKE ? OR root_cause LIKE ? OR recommendation LIKE ? OR log_source LIKE ?
-            ORDER BY created_at DESC LIMIT ?
-            """,
+            WHERE raw_log LIKE :q OR root_cause LIKE :q OR recommendation LIKE :q OR log_source LIKE :q
+            ORDER BY created_at DESC LIMIT :limit
+            """),
             conn,
-            params=(q, q, q, q, limit),
+            params={"q": q, "limit": limit},
         )
 
 
@@ -109,12 +130,13 @@ def get_incident_summary(run_id: str | None = None) -> dict:
     Retorna un diccionario con estadísticas agregadas de los incidentes.
     """
     init_db()
+    import sqlalchemy as sa
     with get_connection() as conn:
         if run_id:
             df = pd.read_sql_query(
-                "SELECT level, is_anomaly FROM incidents WHERE run_id = ?",
+                sa.text("SELECT level, is_anomaly FROM incidents WHERE run_id = :run_id"),
                 conn,
-                params=(run_id,),
+                params={"run_id": run_id},
             )
         else:
             df = pd.read_sql_query("SELECT level, is_anomaly FROM incidents", conn)
