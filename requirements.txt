@@ -13,3 +13,4 @@ tqdm
 jupyter
 sentencepiece
 pytest
+sqlalchemy
