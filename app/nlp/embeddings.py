@@ -22,8 +22,9 @@ def create_embeddings(texts: list[str], force_backend: str = None):
             return embs, embedder.backend
         except Exception as exc:
             logger.warning(
-                "Error en DistilBERT remoto: %s. Realizando fallback a modelo local.",
-                exc
+                "Error en DistilBERT remoto [%s]: %s. Realizando fallback a TF-IDF.",
+                exc.__class__.__name__,
+                exc,
             )
             # Fallback inmediato a TF-IDF para evitar bloqueos y lentitud de CPU local
             force_backend = "tfidf"

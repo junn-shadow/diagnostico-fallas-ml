@@ -2,22 +2,27 @@ import json
 import pandas as pd
 from datetime import datetime
 
+
 def generate_html_report(logs: pd.DataFrame, result) -> str:
     """
     Genera un reporte HTML autocontenido con diseño premium de nivel ejecutivo.
     Utiliza fuentes de Google, gradients, tarjetas glassmorphic, y tablas responsivas.
     """
-    alerts = logs[logs["is_anomaly"] | logs["level"].isin(["ERROR", "CRITICAL", "FATAL"])].copy()
+    alerts = logs[
+        logs["is_anomaly"] | logs["level"].isin(["ERROR", "CRITICAL", "FATAL"])
+    ].copy()
     if not alerts.empty:
-        alerts = alerts.sort_values(["is_anomaly", "anomaly_score"], ascending=[False, False])
-    
+        alerts = alerts.sort_values(
+            ["is_anomaly", "anomaly_score"], ascending=[False, False]
+        )
+
     # Formatear la fecha
     date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     # Contar severidades para el reporte
     levels_count = logs["level"].value_counts().to_dict()
     severity_distribution = ", ".join([f"{k}: {v}" for k, v in levels_count.items()])
-    
+
     # Crear filas para la tabla de incidentes
     table_rows = ""
     if alerts.empty:
@@ -25,14 +30,19 @@ def generate_html_report(logs: pd.DataFrame, result) -> str:
     else:
         for idx, row in enumerate(alerts.head(150).itertuples()):
             lvl = getattr(row, "level", "UNKNOWN")
-            badge_class = f"badge-{lvl.lower()}" if lvl.lower() in ["info", "warning", "warn", "error", "critical", "fatal", "debug"] else "badge-other"
-            
+            badge_class = (
+                f"badge-{lvl.lower()}"
+                if lvl.lower()
+                in ["info", "warning", "warn", "error", "critical", "fatal", "debug"]
+                else "badge-other"
+            )
+
             line = getattr(row, "line_id", "-")
             score = getattr(row, "anomaly_score", 0.0)
             tmpl = getattr(row, "event_template", "-")
             cause = getattr(row, "root_cause", "-")
             rec = getattr(row, "recommendation", "-")
-            
+
             table_rows += f"""
             <tr>
                 <td><strong>L{line}</strong></td>
@@ -43,7 +53,7 @@ def generate_html_report(logs: pd.DataFrame, result) -> str:
                 <td>{rec}</td>
             </tr>
             """
-            
+
     # Crear filas para el pipeline
     pipeline_rows = ""
     for stage in result.stages:
@@ -58,6 +68,7 @@ def generate_html_report(logs: pd.DataFrame, result) -> str:
 
     # Executive Summary Text
     from app.dashboard.insights import build_executive_summary
+
     summary_data = build_executive_summary(logs)
 
     html_content = f"""<!DOCTYPE html>
@@ -396,6 +407,66 @@ def generate_html_report(logs: pd.DataFrame, result) -> str:
                 font-size: 1.7rem;
             }}
         }}
+
+        /* @media print styles to enable seamless Save-to-PDF formatting */
+        @media print {{
+            body {{
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                font-size: 10pt !important;
+            }}
+            .container {{
+                max-width: 100% !important;
+                margin: 0 !important;
+            }}
+            header {{
+                background: none !important;
+                background-color: #f8fafc !important;
+                color: #0f172a !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                padding: 1.5rem !important;
+                page-break-inside: avoid;
+            }}
+            header h1 {{
+                color: #0f172a !important;
+                font-size: 1.8rem !important;
+            }}
+            header::after {{
+                display: none !important;
+            }}
+            .header-meta {{
+                border-top: 1px solid #94a3b8 !important;
+                color: #334155 !important;
+                padding-top: 0.5rem !important;
+            }}
+            .header-meta span strong {{
+                color: black !important;
+            }}
+            .metric-card, .card, .executive-box, .pipeline-card {{
+                box-shadow: none !important;
+                border: 1px solid #cbd5e1 !important;
+                background: white !important;
+                page-break-inside: avoid !important;
+            }}
+            .metric-value {{
+                color: #0284c7 !important;
+            }}
+            table {{
+                page-break-inside: auto;
+            }}
+            tr {{
+                page-break-inside: avoid !important;
+                page-break-after: auto;
+            }}
+            thead {{
+                display: table-header-group;
+            }}
+            footer {{
+                page-break-inside: avoid;
+            }}
+        }}
     </style>
 </head>
 <body>
@@ -481,7 +552,7 @@ def generate_html_report(logs: pd.DataFrame, result) -> str:
         </div>
 
         <footer>
-            <p>DiagnosticOps ML &copy; {datetime.now().year} — Desarrollado con Inteligencia Artificial. Confidencial e Interno.</p>
+            <p>DiagnosticOps ML &copy; {datetime.now().year} — Reporte de Análisis y Diagnóstico de Fallas.</p>
         </footer>
     </div>
 </body>
@@ -489,73 +560,88 @@ def generate_html_report(logs: pd.DataFrame, result) -> str:
 """
     return html_content
 
+
 def generate_json_report(logs: pd.DataFrame, result) -> str:
     """
     Genera un payload JSON estructurado con toda la metadata del análisis.
     """
-    alerts = logs[logs["is_anomaly"] | logs["level"].isin(["ERROR", "CRITICAL", "FATAL"])].copy()
+    alerts = logs[
+        logs["is_anomaly"] | logs["level"].isin(["ERROR", "CRITICAL", "FATAL"])
+    ].copy()
     if not alerts.empty:
-        alerts = alerts.sort_values(["is_anomaly", "anomaly_score"], ascending=[False, False])
-    
+        alerts = alerts.sort_values(
+            ["is_anomaly", "anomaly_score"], ascending=[False, False]
+        )
+
     # Formatear la lista de alertas
     alert_list = []
     for row in alerts.head(500).itertuples():
-        alert_list.append({
-            "line_id": int(getattr(row, "line_id")),
-            "level": str(getattr(row, "level")),
-            "is_anomaly": bool(getattr(row, "is_anomaly")),
-            "anomaly_score": float(getattr(row, "anomaly_score", 0.0)),
-            "event_template": str(getattr(row, "event_template", "")),
-            "root_cause": str(getattr(row, "root_cause", "")),
-            "recommendation": str(getattr(row, "recommendation", ""))
-        })
-        
+        alert_list.append(
+            {
+                "line_id": int(getattr(row, "line_id")),
+                "level": str(getattr(row, "level")),
+                "is_anomaly": bool(getattr(row, "is_anomaly")),
+                "anomaly_score": float(getattr(row, "anomaly_score", 0.0)),
+                "event_template": str(getattr(row, "event_template", "")),
+                "root_cause": str(getattr(row, "root_cause", "")),
+                "recommendation": str(getattr(row, "recommendation", "")),
+            }
+        )
+
     from app.dashboard.insights import build_executive_summary
+
     summary_data = build_executive_summary(logs)
-    
+
     report_data = {
         "metadata": {
             "run_id": result.run_id,
             "log_source": result.log_source,
             "timestamp": datetime.now().isoformat(),
-            "analyzer_version": "1.0.0"
+            "analyzer_version": "1.0.0",
         },
         "stats": {
             "total_lines": len(logs),
             "anomaly_count": result.anomaly_count,
             "anomaly_rate": (result.anomaly_count / len(logs)) if len(logs) else 0.0,
-            "error_count": int(logs["level"].isin(["ERROR", "CRITICAL", "FATAL"]).sum()),
+            "error_count": int(
+                logs["level"].isin(["ERROR", "CRITICAL", "FATAL"]).sum()
+            ),
             "severity_counts": logs["level"].value_counts().to_dict(),
             "silhouette_score": float(result.silhouette_score),
-            "davies_bouldin_index": float(result.davies_bouldin_index)
+            "davies_bouldin_index": float(result.davies_bouldin_index),
         },
         "executive_summary": summary_data,
         "pipeline_stages": result.stages,
-        "top_alerts": alert_list
+        "top_alerts": alert_list,
     }
-    
+
     return json.dumps(report_data, indent=2, ensure_ascii=False)
+
 
 def generate_csv_report(logs: pd.DataFrame) -> str:
     """
     Retorna el dataframe de alertas filtrado en formato CSV listo para descargar.
     """
-    alerts = logs[logs["is_anomaly"] | logs["level"].isin(["ERROR", "CRITICAL", "FATAL"])].copy()
+    alerts = logs[
+        logs["is_anomaly"] | logs["level"].isin(["ERROR", "CRITICAL", "FATAL"])
+    ].copy()
     if not alerts.empty:
-        alerts = alerts.sort_values(["is_anomaly", "anomaly_score"], ascending=[False, False])
-    
+        alerts = alerts.sort_values(
+            ["is_anomaly", "anomaly_score"], ascending=[False, False]
+        )
+
     columns_to_export = [
-        "line_id", 
-        "level", 
-        "is_anomaly", 
-        "anomaly_score", 
-        "event_template", 
-        "root_cause", 
+        "line_id",
+        "level",
+        "is_anomaly",
+        "anomaly_score",
+        "event_template",
+        "root_cause",
         "recommendation",
-        "clean_log"
+        "clean_log",
     ]
-    
+
     # Asegurar que solo exportamos columnas existentes
     cols = [c for c in columns_to_export if c in alerts.columns]
-    
+
     return alerts[cols].to_csv(index=False)

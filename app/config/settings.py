@@ -28,6 +28,10 @@ if _env_path.exists():
 
 HF_API_TOKEN = os.getenv("HF_API_TOKEN", "")
 
+# Ruta del archivo SQLite. Se puede sobrescribir con la variable SQLITE_DB_PATH en .env
+# Por defecto usa la ruta definida en paths.py (incidents.sqlite3).
+SQLITE_DB_PATH = os.getenv("SQLITE_DB_PATH", "")
+
 SEVERITY_WEIGHTS = {
     "DEBUG": 0,
     "INFO": 1,

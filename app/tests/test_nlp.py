@@ -17,7 +17,12 @@ def test_tfidf_backend_consistency():
     embedder = SemanticEmbedder()
     embedder.backend = "tfidf"
 
-    all_texts = ["connection refused", "disk space full", "database timeout", "oom error"]
+    all_texts = [
+        "connection refused",
+        "disk space full",
+        "database timeout",
+        "oom error",
+    ]
     subset1 = ["connection refused", "database timeout"]
     subset2 = ["disk space full"]
 
@@ -28,4 +33,3 @@ def test_tfidf_backend_consistency():
     assert res_all.shape[1] == res_sub1.shape[1]
     assert res_all.shape[1] == res_sub2.shape[1]
     assert res_all.shape[1] > 0
-

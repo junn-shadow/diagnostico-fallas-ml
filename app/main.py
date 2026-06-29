@@ -10,7 +10,11 @@ def main(log_path: str | None = None):
     print(f"Incidentes guardados: {result.saved_incidents}")
     if result.persistence_error:
         print(f"Persistencia SQLite no disponible: {result.persistence_error}")
-    print(result.logs[["line_id", "level", "is_anomaly", "root_cause", "recommendation"]].to_string(index=False))
+    print(
+        result.logs[
+            ["line_id", "level", "is_anomaly", "root_cause", "recommendation"]
+        ].to_string(index=False)
+    )
 
 
 if __name__ == "__main__":

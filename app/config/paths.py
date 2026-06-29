@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 ROOT_DIR = Path(__file__).resolve().parents[2]
 APP_DIR = ROOT_DIR / "app"
 DATASETS_DIR = ROOT_DIR / "datasets"

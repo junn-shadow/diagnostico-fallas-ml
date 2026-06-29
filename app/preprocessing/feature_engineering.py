@@ -14,8 +14,14 @@ def build_features(logs: pd.DataFrame):
     numeric = pd.DataFrame(
         {
             "severity": df["level"].map(SEVERITY_WEIGHTS).fillna(1).astype(float),
-            "template_frequency": df.groupby("event_template")["event_template"].transform("count").astype(float),
-            "message_length": df["clean_log"].fillna(df["raw_log"]).astype(str).str.len().astype(float),
+            "template_frequency": df.groupby("event_template")["event_template"]
+            .transform("count")
+            .astype(float),
+            "message_length": df["clean_log"]
+            .fillna(df["raw_log"])
+            .astype(str)
+            .str.len()
+            .astype(float),
         }
     )
     return tfidf, numeric, vectorizer

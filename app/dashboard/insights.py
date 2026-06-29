@@ -1,9 +1,23 @@
 import pandas as pd
 
-
 DOMAIN_KEYWORDS = {
-    "Base de datos": ("database", "db", "sql", "mysql", "postgres", "oracle", "connection failed"),
-    "Red / conectividad": ("network", "timeout", "unreachable", "refused", "socket", "connection"),
+    "Base de datos": (
+        "database",
+        "db",
+        "sql",
+        "mysql",
+        "postgres",
+        "oracle",
+        "connection failed",
+    ),
+    "Red / conectividad": (
+        "network",
+        "timeout",
+        "unreachable",
+        "refused",
+        "socket",
+        "connection",
+    ),
     "Disco / almacenamiento": ("disk", "filesystem", "volume", "space", "io error"),
     "Recursos del servidor": ("cpu", "memory", "oom", "heap", "usage high", "thread"),
     "Autenticacion": ("auth", "login", "permission", "denied", "token", "credential"),
@@ -12,7 +26,9 @@ DOMAIN_KEYWORDS = {
 
 
 def infer_log_domain(logs: pd.DataFrame) -> list[tuple[str, int]]:
-    text = " ".join(logs["clean_log"].fillna(logs["raw_log"]).astype(str).str.lower().head(20000))
+    text = " ".join(
+        logs["clean_log"].fillna(logs["raw_log"]).astype(str).str.lower().head(20000)
+    )
     scores = []
     for domain, keywords in DOMAIN_KEYWORDS.items():
         score = sum(text.count(keyword) for keyword in keywords)
@@ -24,8 +40,14 @@ def infer_log_domain(logs: pd.DataFrame) -> list[tuple[str, int]]:
 def build_executive_summary(logs: pd.DataFrame) -> dict[str, str]:
     total = len(logs)
     anomalies = int(logs["is_anomaly"].sum()) if "is_anomaly" in logs else 0
-    critical = int(logs["level"].isin(["CRITICAL", "FATAL"]).sum()) if "level" in logs else 0
-    errors = int(logs["level"].isin(["ERROR", "CRITICAL", "FATAL"]).sum()) if "level" in logs else 0
+    critical = (
+        int(logs["level"].isin(["CRITICAL", "FATAL"]).sum()) if "level" in logs else 0
+    )
+    errors = (
+        int(logs["level"].isin(["ERROR", "CRITICAL", "FATAL"]).sum())
+        if "level" in logs
+        else 0
+    )
     domains = infer_log_domain(logs)
     main_domain = domains[0][0] if domains else "Operacion general del servidor"
 

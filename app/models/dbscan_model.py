@@ -38,7 +38,9 @@ def cluster_with_dbscan(
     # Determinar el método real a ejecutar
     run_method = method
     if method == "auto":
-        run_method = "minibatch_kmeans" if rows > MAX_PAIRWISE_CLUSTER_ROWS else "dbscan"
+        run_method = (
+            "minibatch_kmeans" if rows > MAX_PAIRWISE_CLUSTER_ROWS else "dbscan"
+        )
 
     model = None
     labels = None
@@ -47,9 +49,11 @@ def cluster_with_dbscan(
     if run_method in ("minibatch_kmeans", "kmeans"):
         # Reducción dimensional para KMeans en matrices sparsas de gran volumen
         components = max(2, min(50, tfidf.shape[1] - 1, rows - 1))
-        reduced = TruncatedSVD(n_components=components, random_state=DEFAULT_RANDOM_STATE).fit_transform(tfidf)
+        reduced = TruncatedSVD(
+            n_components=components, random_state=DEFAULT_RANDOM_STATE
+        ).fit_transform(tfidf)
         k = max(2, min(n_clusters, rows - 1))
-        
+
         if run_method == "minibatch_kmeans":
             model = MiniBatchKMeans(
                 n_clusters=k,

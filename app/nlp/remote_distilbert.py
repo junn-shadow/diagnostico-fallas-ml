@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 import requests
+import time
 from typing import List
 
 from app.config.settings import HF_API_TOKEN, DISTILBERT_MODEL_NAME
@@ -14,28 +15,47 @@ class RemoteSemanticEmbedder:
     Falls back gracefully if the token is missing or the API fails.
     """
 
-    def __init__(self, model_name: str = DISTILBERT_MODEL_NAME, timeout: int = 8):
+    def __init__(self, model_name: str = DISTILBERT_MODEL_NAME, timeout: int = 15):
         self.model_name = model_name
         self.api_url = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{model_name}"
-        self.headers = {"Authorization": f"Bearer {HF_API_TOKEN}"} if HF_API_TOKEN else {}
+        self.headers = (
+            {"Authorization": f"Bearer {HF_API_TOKEN}"} if HF_API_TOKEN else {}
+        )
         self.timeout = timeout
         self.backend = "distilbert_remote"
 
     # ------------------------------------------------------------------
     def _call_api(self, texts: List[str]) -> list:
-        """POST a batch of texts and return the raw JSON response."""
+        """POST a batch of texts and return the raw JSON response with retries."""
         payload = {
             "inputs": texts,
             "options": {"wait_for_model": True, "use_cache": True},
         }
-        resp = requests.post(
-            self.api_url,
-            headers=self.headers,
-            json=payload,
-            timeout=self.timeout,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        
+        max_retries = 2
+        for attempt in range(max_retries + 1):
+            t0 = time.perf_counter()
+            try:
+                resp = requests.post(
+                    self.api_url,
+                    headers=self.headers,
+                    json=payload,
+                    timeout=self.timeout,
+                )
+                resp.raise_for_status()
+                latency = time.perf_counter() - t0
+                logger.debug("HF API request exitoso (status=%d, latency=%.2fs)", resp.status_code, latency)
+                return resp.json()
+            except Exception as exc:
+                latency = time.perf_counter() - t0
+                status_code = getattr(exc.response, "status_code", "N/A") if hasattr(exc, "response") else "N/A"
+                if attempt < max_retries:
+                    wait = 2 ** attempt  # 1s, 2s
+                    logger.warning("Error HF API (status=%s, latency=%.2fs): %s. Reintentando en %ds...", status_code, latency, exc, wait)
+                    time.sleep(wait)
+                else:
+                    logger.error("Error definitivo HF API tras %d intentos (status=%s): %s", max_retries + 1, status_code, exc)
+                    raise
 
     # ------------------------------------------------------------------
     @staticmethod
@@ -60,7 +80,12 @@ class RemoteSemanticEmbedder:
         all_embeddings: List[np.ndarray] = []
         for start in range(0, len(texts), batch_size):
             batch = texts[start : start + batch_size]
-            logger.info("HF API: enviando lote %d-%d de %d textos", start, start + len(batch), len(texts))
+            logger.info(
+                "HF API: enviando lote %d-%d de %d textos",
+                start,
+                start + len(batch),
+                len(texts),
+            )
             try:
                 result = self._call_api(batch)
                 # result is a list (one entry per input).

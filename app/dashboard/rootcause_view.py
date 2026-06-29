@@ -9,13 +9,13 @@ except Exception:
     go = None
 
 COLOR_MAP = {
-    "DEBUG":    "#64748b",
-    "INFO":     "#0ea5e9",
-    "WARNING":  "#f59e0b",
-    "WARN":     "#f59e0b",
-    "ERROR":    "#ef4444",
+    "DEBUG": "#64748b",
+    "INFO": "#0ea5e9",
+    "WARNING": "#f59e0b",
+    "WARN": "#f59e0b",
+    "ERROR": "#ef4444",
     "CRITICAL": "#b91c1c",
-    "FATAL":    "#7f1d1d",
+    "FATAL": "#7f1d1d",
 }
 
 
@@ -23,7 +23,7 @@ def render_root_causes(logs: pd.DataFrame) -> None:
     st.subheader("🧠 Mapa de Causas Raíz")
     st.markdown(
         '<p class="section-note">Hipótesis generadas automáticamente por reglas de correlación '
-        'semántica. Las causas con mayor repetición son los focos principales de inestabilidad.</p>',
+        "semántica. Las causas con mayor repetición son los focos principales de inestabilidad.</p>",
         unsafe_allow_html=True,
     )
 
@@ -55,11 +55,17 @@ def render_root_causes(logs: pd.DataFrame) -> None:
                 color="score_max",
                 color_continuous_scale=["#bae6fd", "#f97316", "#b91c1c"],
                 text="cantidad",
-                labels={"root_cause": "Causa Raíz", "cantidad": "Eventos", "score_max": "Score ML Máx"},
+                labels={
+                    "root_cause": "Causa Raíz",
+                    "cantidad": "Eventos",
+                    "score_max": "Score ML Máx",
+                },
             )
             fig.update_traces(textposition="outside", textfont_size=10)
             fig.update_layout(
-                font=dict(family="Plus Jakarta Sans, sans-serif", size=11, color="#1e293b"),
+                font=dict(
+                    family="Plus Jakarta Sans, sans-serif", size=11, color="#1e293b"
+                ),
                 height=340,
                 margin=dict(l=10, r=10, t=18, b=10),
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -81,7 +87,14 @@ def render_root_causes(logs: pd.DataFrame) -> None:
                     textinfo="percent",
                     textfont_size=11,
                     marker=dict(
-                        colors=["#0ea5e9", "#f59e0b", "#ef4444", "#10b981", "#8b5cf6", "#64748b"],
+                        colors=[
+                            "#0ea5e9",
+                            "#f59e0b",
+                            "#ef4444",
+                            "#10b981",
+                            "#8b5cf6",
+                            "#64748b",
+                        ],
                         line=dict(color="#ffffff", width=2),
                     ),
                     hovertemplate="<b>%{label}</b><br>%{value} eventos (%{percent})<extra></extra>",
@@ -92,10 +105,13 @@ def render_root_causes(logs: pd.DataFrame) -> None:
                 text=f"<b>{total_causes}</b><br><span style='font-size:9px'>causas</span>",
                 showarrow=False,
                 font=dict(size=15, color="#0f172a"),
-                x=0.5, y=0.5,
+                x=0.5,
+                y=0.5,
             )
             fig_donut.update_layout(
-                font=dict(family="Plus Jakarta Sans, sans-serif", size=11, color="#1e293b"),
+                font=dict(
+                    family="Plus Jakarta Sans, sans-serif", size=11, color="#1e293b"
+                ),
                 height=340,
                 margin=dict(l=10, r=10, t=18, b=10),
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -113,6 +129,8 @@ def render_root_causes(logs: pd.DataFrame) -> None:
             "root_cause": st.column_config.TextColumn("Causa Raíz", width="large"),
             "cantidad": st.column_config.NumberColumn("Total Eventos", width="small"),
             "anomalias": st.column_config.NumberColumn("Anomalías ML", width="small"),
-            "score_max": st.column_config.NumberColumn("Score Máx.", format="%.4f", width="small"),
+            "score_max": st.column_config.NumberColumn(
+                "Score Máx.", format="%.4f", width="small"
+            ),
         },
     )

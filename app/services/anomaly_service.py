@@ -1,5 +1,9 @@
 from app.models.anomaly_detector import detect_anomalies
-from app.config.settings import DEFAULT_CONTAMINATION, DEFAULT_DBSCAN_EPS, DEFAULT_DBSCAN_MIN_SAMPLES
+from app.config.settings import (
+    DEFAULT_CONTAMINATION,
+    DEFAULT_DBSCAN_EPS,
+    DEFAULT_DBSCAN_MIN_SAMPLES,
+)
 
 
 def enrich_with_anomalies(
@@ -29,10 +33,10 @@ def enrich_with_anomalies(
     df["is_anomaly"] = isolation["is_anomaly"]
     df["anomaly_score"] = isolation["anomaly_score"]
     df["dbscan_cluster"] = dbscan["cluster"].values
-    
+
     # Guardar métricas evaluadas
     df.attrs["statistical_cluster_backend"] = dbscan.get("backend", "unknown")
     df.attrs["silhouette_score"] = dbscan.get("silhouette_score", 0.0)
     df.attrs["davies_bouldin_index"] = dbscan.get("davies_bouldin_index", 0.0)
-    
+
     return df

@@ -1,6 +1,10 @@
 from app.models.dbscan_model import cluster_with_dbscan
 from app.models.isolation_forest import detect_with_isolation_forest
-from app.config.settings import DEFAULT_CONTAMINATION, DEFAULT_DBSCAN_EPS, DEFAULT_DBSCAN_MIN_SAMPLES
+from app.config.settings import (
+    DEFAULT_CONTAMINATION,
+    DEFAULT_DBSCAN_EPS,
+    DEFAULT_DBSCAN_MIN_SAMPLES,
+)
 
 
 def detect_anomalies(
@@ -13,10 +17,12 @@ def detect_anomalies(
     clustering_n_clusters: int = 5,
 ):
     """
-    Orquesta la ejecución del detector de anomalías (Isolation Forest) y 
+    Orquesta la ejecución del detector de anomalías (Isolation Forest) y
     del agrupamiento (DBSCAN/KMeans) utilizando los parámetros configurados.
     """
-    isolation = detect_with_isolation_forest(tfidf, numeric, contamination=contamination)
+    isolation = detect_with_isolation_forest(
+        tfidf, numeric, contamination=contamination
+    )
     dbscan = cluster_with_dbscan(
         tfidf,
         eps=clustering_eps,

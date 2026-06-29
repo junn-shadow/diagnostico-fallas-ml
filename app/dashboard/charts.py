@@ -11,14 +11,15 @@ except Exception:
     make_subplots = None
 
 
+# Paleta corporativa Slate-Blue-Teal / Acentos suavizados no-neón
 COLOR_MAP = {
-    "DEBUG":    "#64748b",
-    "INFO":     "#0ea5e9",
-    "WARNING":  "#f59e0b",
-    "WARN":     "#f59e0b",
-    "ERROR":    "#ef4444",
-    "CRITICAL": "#b91c1c",
-    "FATAL":    "#7f1d1d",
+    "DEBUG": "#94a3b8",      # Slate-400
+    "INFO": "#0ea5e9",       # Sky-500
+    "WARNING": "#f59e0b",    # Amber-500
+    "WARN": "#f59e0b",
+    "ERROR": "#f43f5e",      # Rose-500
+    "CRITICAL": "#be123c",   # Rose-700
+    "FATAL": "#9f1239",      # Rose-800
 }
 
 SEVERITY_ORDER = ["DEBUG", "INFO", "WARNING", "WARN", "ERROR", "CRITICAL", "FATAL"]
@@ -26,8 +27,9 @@ SEVERITY_ORDER = ["DEBUG", "INFO", "WARNING", "WARN", "ERROR", "CRITICAL", "FATA
 
 def _layout_base(h: int = 300) -> dict:
     """Retorna configuración de layout compartida para todos los gráficos."""
+    # Usar color de texto gris slate neutro para legibilidad perfecta en modo claro y oscuro
     return dict(
-        font=dict(family="Plus Jakarta Sans, sans-serif", size=11, color="#1e293b"),
+        font=dict(family="Inter, Outfit, sans-serif", size=11, color="#94a3b8"),
         height=h,
         margin=dict(l=10, r=10, t=24, b=10),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -43,7 +45,7 @@ def render_tradingview_timeline(logs: pd.DataFrame) -> None:
     st.subheader("Línea temporal de anomalías y eventos críticos")
     st.markdown(
         '<p class="section-note">Eventos críticos distribuidos a lo largo del archivo de log. '
-        'Pasa el cursor sobre los marcadores para inspeccionar el diagnóstico semántico.</p>',
+        "Pasa el cursor sobre los marcadores para inspeccionar el diagnóstico semántico.</p>",
         unsafe_allow_html=True,
     )
 
@@ -52,11 +54,14 @@ def render_tradingview_timeline(logs: pd.DataFrame) -> None:
         return
 
     alert_logs = logs[
-        logs["is_anomaly"] | logs["level"].isin(["WARNING", "WARN", "ERROR", "CRITICAL", "FATAL"])
+        logs["is_anomaly"]
+        | logs["level"].isin(["WARNING", "WARN", "ERROR", "CRITICAL", "FATAL"])
     ].copy()
 
     if alert_logs.empty:
-        st.info("No se detectaron eventos críticos ni anomalías para mostrar en la línea temporal.")
+        st.info(
+            "No se detectaron eventos críticos ni anomalías para mostrar en la línea temporal."
+        )
         return
 
     alert_logs = alert_logs.sort_values("line_id").reset_index(drop=True)
@@ -83,15 +88,17 @@ def render_tradingview_timeline(logs: pd.DataFrame) -> None:
 
     fig = go.Figure()
 
-    # Líneas de referencia por nivel
+    # Líneas de referencia por nivel (muy sutiles, adaptables a claro/oscuro)
     for y_val, label, color in [
-        (2, "Warnings",       "#fef3c7"),
-        (3, "Errores",        "#fee2e2"),
-        (4, "Críticos/Fatal", "#fecdd3"),
+        (2, "Warnings", "#f59e0b"),
+        (3, "Errores", "#f43f5e"),
+        (4, "Críticos/Fatal", "#be123c"),
     ]:
         fig.add_hrect(
-            y0=y_val - 0.4, y1=y_val + 0.4,
-            fillcolor=color, opacity=0.25,
+            y0=y_val - 0.4,
+            y1=y_val + 0.4,
+            fillcolor=color,
+            opacity=0.06,
             line_width=0,
         )
 
@@ -102,20 +109,22 @@ def render_tradingview_timeline(logs: pd.DataFrame) -> None:
             y=alert_logs["y_pos"],
             mode="markers",
             marker=dict(
-                size=[14 if a else 10 for a in alert_logs["is_anomaly"]],
-                color=[COLOR_MAP.get(lvl, "#2563eb") for lvl in alert_logs["level"]],
+                size=[13 if a else 9 for a in alert_logs["is_anomaly"]],
+                color=[COLOR_MAP.get(lvl, "#0ea5e9") for lvl in alert_logs["level"]],
                 symbol=["diamond" if a else "circle" for a in alert_logs["is_anomaly"]],
-                line=dict(color="#ffffff", width=1.5),
-                opacity=0.9,
+                line=dict(color="rgba(255, 255, 255, 0.7)", width=1),
+                opacity=0.85,
             ),
-            customdata=list(zip(
-                alert_logs["line_id"],
-                alert_logs["level"],
-                alert_logs["anomaly_score"].round(4),
-                alert_logs["root_cause"],
-                alert_logs["recommendation"],
-                alert_logs["clean_log"].str.slice(0, 100),
-            )),
+            customdata=list(
+                zip(
+                    alert_logs["line_id"],
+                    alert_logs["level"],
+                    alert_logs["anomaly_score"].round(4),
+                    alert_logs["root_cause"],
+                    alert_logs["recommendation"],
+                    alert_logs["clean_log"].str.slice(0, 100),
+                )
+            ),
             hovertemplate=(
                 "<b>Línea L%{customdata[0]}</b><br>"
                 "<b>Nivel:</b> %{customdata[1]} — Score: %{customdata[2]}<br>"
@@ -131,14 +140,16 @@ def render_tradingview_timeline(logs: pd.DataFrame) -> None:
     layout.update(
         showlegend=False,
         xaxis=dict(
-            gridcolor="#e2e8f0", title="Línea del Log",
-            showline=True, linecolor="#cbd5e1",
+            gridcolor="rgba(148, 163, 184, 0.12)",
+            title="Línea del Log",
+            showline=True,
+            linecolor="rgba(148, 163, 184, 0.2)",
         ),
         yaxis=dict(
             tickmode="array",
             tickvals=[1, 2, 3, 4],
             ticktext=["Info/Anomalía", "Warning", "Error", "Crítico/Fatal"],
-            gridcolor="#e2e8f0",
+            gridcolor="rgba(148, 163, 184, 0.12)",
             range=[0.4, 4.6],
             fixedrange=True,
         ),
@@ -152,19 +163,18 @@ def render_charts(logs: pd.DataFrame) -> None:
 
     # ── 1. Distribución de severidad (barras horizontales) + Donut de NLP ──────
     severity = (
-        logs["level"]
-        .value_counts()
-        .rename_axis("level")
-        .reset_index(name="count")
+        logs["level"].value_counts().rename_axis("level").reset_index(name="count")
     )
     clusters_counts = logs["semantic_cluster"].value_counts().sort_index()
-    clusters = pd.DataFrame({
-        "cluster": [
-            f"Cluster {int(c)}" if c >= 0 else "Sin asignar"
-            for c in clusters_counts.index
-        ],
-        "count": clusters_counts.values,
-    })
+    clusters = pd.DataFrame(
+        {
+            "cluster": [
+                f"Cluster {int(c)}" if c >= 0 else "Sin asignar"
+                for c in clusters_counts.index
+            ],
+            "count": clusters_counts.values,
+        }
+    )
 
     col_a, col_b = st.columns([1.1, 0.9])
 
@@ -176,6 +186,8 @@ def render_charts(logs: pd.DataFrame) -> None:
                 lambda l: SEVERITY_ORDER.index(l) if l in SEVERITY_ORDER else 99
             )
             severity = severity.sort_values("order")
+            total_logs = severity["count"].sum()
+            severity["percentage"] = (severity["count"] / total_logs * 100).round(1)
 
             fig = px.bar(
                 severity,
@@ -185,13 +197,20 @@ def render_charts(logs: pd.DataFrame) -> None:
                 color="level",
                 color_discrete_map=COLOR_MAP,
                 text="count",
+                custom_data=["percentage"]
             )
-            fig.update_traces(textposition="outside", textfont_size=11)
+            fig.update_traces(
+                textposition="outside", 
+                textfont_size=10,
+                textfont_family="Inter, sans-serif",
+                marker=dict(line=dict(width=0)),
+                hovertemplate="<b>Severidad: %{y}</b><br>• Eventos: %{x:,}<br>• Proporción: %{customdata[0]:.1f}%<extra></extra>"
+            )
             layout = _layout_base(260)
             layout.update(
                 showlegend=False,
-                xaxis=dict(gridcolor="#e2e8f0", title="Cantidad", showgrid=True),
-                yaxis=dict(gridcolor="#e2e8f0", title="", autorange="reversed"),
+                xaxis=dict(gridcolor="rgba(148, 163, 184, 0.12)", title="Cantidad", showgrid=True),
+                yaxis=dict(gridcolor="rgba(148, 163, 184, 0.12)", title="", autorange="reversed"),
             )
             fig.update_layout(**layout)
             st.plotly_chart(fig, use_container_width=True)
@@ -201,18 +220,22 @@ def render_charts(logs: pd.DataFrame) -> None:
     with col_b:
         st.subheader("Familias semánticas (NLP)")
         if go:
+            # Paleta de clusters coordinada, no ruidosa
+            cluster_colors = ["#0ea5e9", "#14b8a6", "#38bdf8", "#0f766e", "#0284c7", "#64748b"]
+            
             fig = go.Figure(
                 go.Pie(
                     labels=clusters["cluster"],
                     values=clusters["count"],
                     hole=0.62,
-                    textinfo="label+percent",
-                    textfont_size=11,
+                    textinfo="percent",
+                    textfont_size=10,
+                    textfont_family="Inter, sans-serif",
                     marker=dict(
-                        colors=px.colors.qualitative.Safe if px else None,
-                        line=dict(color="#ffffff", width=2),
+                        colors=cluster_colors,
+                        line=dict(color="rgba(148, 163, 184, 0.2)", width=1),
                     ),
-                    hovertemplate="<b>%{label}</b><br>%{value} eventos (%{percent})<extra></extra>",
+                    hovertemplate="<b>%{label}</b><br>• Coincidencias: <b>%{value:,} eventos</b><br>• Proporción: <b>%{percent}</b> del total<extra></extra>",
                 )
             )
             # Anotación central con el total
@@ -220,16 +243,19 @@ def render_charts(logs: pd.DataFrame) -> None:
             fig.add_annotation(
                 text=f"<b>{total_unique}</b><br><span style='font-size:9px'>familias</span>",
                 showarrow=False,
-                font=dict(size=16, color="#0f172a"),
-                x=0.5, y=0.5,
+                font=dict(size=15, color="#94a3b8", family="Outfit, sans-serif"),
+                x=0.5,
+                y=0.5,
             )
             layout = _layout_base(260)
             layout.update(
                 legend=dict(
                     orientation="v",
-                    yanchor="middle", y=0.5,
-                    xanchor="left", x=1.02,
-                    font=dict(size=10),
+                    yanchor="middle",
+                    y=0.5,
+                    xanchor="left",
+                    x=1.02,
+                    font=dict(size=9, family="Inter, sans-serif"),
                 )
             )
             fig.update_layout(**layout)
@@ -241,13 +267,11 @@ def render_charts(logs: pd.DataFrame) -> None:
     st.subheader("Heatmap de actividad: Clusters × Severidad")
     st.markdown(
         '<p class="section-note">Cruza los clusters NLP con el nivel de severidad para identificar '
-        'qué familia de eventos concentra la mayor actividad crítica.</p>',
+        "qué familia de eventos concentra la mayor actividad crítica.</p>",
         unsafe_allow_html=True,
     )
     if go:
-        top_clusters = (
-            logs["semantic_cluster"].value_counts().head(12).index.tolist()
-        )
+        top_clusters = logs["semantic_cluster"].value_counts().head(12).index.tolist()
         heat_data = (
             logs[logs["semantic_cluster"].isin(top_clusters)]
             .groupby(["semantic_cluster", "level"])
@@ -258,35 +282,42 @@ def render_charts(logs: pd.DataFrame) -> None:
         ordered_levels = [l for l in SEVERITY_ORDER if l in heat_data.columns]
         heat_data = heat_data[ordered_levels]
 
+        # Gradiente RGBA adaptativo que va desde transparente/gris hasta Rose coralino suave
+        heat_colorscale = [
+            [0.0, "rgba(148, 163, 184, 0.05)"],
+            [0.3, "rgba(14, 165, 233, 0.2)"],
+            [0.6, "rgba(245, 158, 11, 0.55)"],
+            [1.0, "rgba(244, 63, 94, 0.85)"],
+        ]
+
         heat_fig = go.Figure(
             go.Heatmap(
                 z=heat_data.values,
                 x=ordered_levels,
-                y=[f"Cluster {int(c)}" if c >= 0 else "Sin asignar" for c in heat_data.index],
-                colorscale=[
-                    [0.0, "#f0f9ff"],
-                    [0.3, "#bae6fd"],
-                    [0.6, "#f97316"],
-                    [1.0, "#b91c1c"],
+                y=[
+                    f"Cluster {int(c)}" if c >= 0 else "Sin asignar"
+                    for c in heat_data.index
                 ],
+                colorscale=heat_colorscale,
                 showscale=True,
-                colorbar=dict(title="Eventos", thickness=12, len=0.8),
-                hovertemplate="<b>%{y} / %{x}</b><br>%{z} eventos<extra></extra>",
+                colorbar=dict(title="Eventos", thickness=10, len=0.8, tickfont=dict(size=9)),
+                hovertemplate="<b>%{y} × Severidad %{x}</b><br>• Eventos: <b>%{z:,}</b><extra></extra>",
             )
         )
         layout = _layout_base(300)
         layout.update(
-            xaxis=dict(title="Severidad"),
-            yaxis=dict(title="Cluster NLP", autorange="reversed"),
+            xaxis=dict(title="Severidad", gridcolor="rgba(148, 163, 184, 0.08)"),
+            yaxis=dict(title="Cluster NLP", autorange="reversed", gridcolor="rgba(148, 163, 184, 0.08)"),
         )
         heat_fig.update_layout(**layout)
         st.plotly_chart(heat_fig, use_container_width=True)
+
 
     # ── 3. Curva de tendencia de riesgo suavizada ────────────────────────────
     st.subheader("Tendencia de riesgo operativo")
     st.markdown(
         '<p class="section-note">Media móvil adaptativa sobre el score de anomalía. '
-        'Los picos rojos indican concentraciones de eventos críticos confirmados.</p>',
+        "Los picos rojos indican concentraciones de eventos críticos confirmados.</p>",
         unsafe_allow_html=True,
     )
 
@@ -305,7 +336,7 @@ def render_charts(logs: pd.DataFrame) -> None:
 
         fig = go.Figure()
 
-        # Área de riesgo bajo (verde)
+        # Área de riesgo bajo (verde esmeralda suave)
         fig.add_trace(
             go.Scatter(
                 x=ordered["line_id"],
@@ -313,44 +344,46 @@ def render_charts(logs: pd.DataFrame) -> None:
                 mode="lines",
                 line=dict(color="rgba(16,185,129,0)", width=0),
                 fill="tozeroy",
-                fillcolor="rgba(16,185,129,0.07)",
+                fillcolor="rgba(16,185,129,0.03)",
                 showlegend=False,
                 hoverinfo="skip",
             )
         )
-        # Área de riesgo alto (rojo)
+        # Área de riesgo alto (rojo suave)
         fig.add_trace(
             go.Scatter(
                 x=ordered["line_id"],
                 y=ordered["normalized_risk"].clip(lower=0.7),
                 mode="lines",
-                line=dict(color="rgba(239,68,68,0)", width=0),
+                line=dict(color="rgba(244,63,94,0)", width=0),
                 fill="tozeroy",
-                fillcolor="rgba(239,68,68,0.09)",
+                fillcolor="rgba(244,63,94,0.04)",
                 showlegend=False,
                 hoverinfo="skip",
             )
         )
-        # Curva principal
+        # Curva principal (Sky Blue)
         fig.add_trace(
             go.Scatter(
                 x=ordered["line_id"],
                 y=ordered["normalized_risk"],
                 mode="lines",
                 name="Tendencia",
-                line=dict(color="#0284c7", width=2.5, shape="spline"),
+                line=dict(color="#0ea5e9", width=2, shape="spline"),
                 fill="tozeroy",
-                fillcolor="rgba(14,165,233,0.07)",
-                hovertemplate="Línea %{x} — Riesgo: %{y:.3f}<extra></extra>",
+                fillcolor="rgba(14, 165, 233, 0.03)",
+                hovertemplate="Línea L%{x} — Nivel Riesgo: %{y:.1%}<extra></extra>",
             )
         )
 
-        # Picos críticos confirmados
+        # Picos críticos confirmados (Rose-500)
         crits = ordered[
-            ordered["is_anomaly"] & ordered["level"].isin(["ERROR", "CRITICAL", "FATAL"])
+            ordered["is_anomaly"]
+            & ordered["level"].isin(["ERROR", "CRITICAL", "FATAL"])
         ]
         if not crits.empty:
             sample = crits.nlargest(60, "anomaly_score")
+            snippet_col = "clean_log" if "clean_log" in sample.columns else "raw_log"
             fig.add_trace(
                 go.Scatter(
                     x=sample["line_id"],
@@ -358,38 +391,66 @@ def render_charts(logs: pd.DataFrame) -> None:
                     mode="markers",
                     name="Pico crítico",
                     marker=dict(
-                        color="#ef4444", size=9, symbol="diamond",
-                        line=dict(color="#ffffff", width=1),
+                        color="#f43f5e",
+                        size=8,
+                        symbol="diamond",
+                        line=dict(color="rgba(255,255,255,0.7)", width=1),
                     ),
-                    hovertemplate="Pico crítico — Línea %{x}<extra></extra>",
+                    customdata=list(
+                        zip(
+                            sample["line_id"],
+                            sample["level"],
+                            sample["anomaly_score"].round(4),
+                            sample[snippet_col].str.slice(0, 70),
+                        )
+                    ),
+                    hovertemplate=(
+                        "<b>Pico Crítico en Línea L%{customdata[0]}</b><br>"
+                        "• Severidad: <b>%{customdata[1]}</b><br>"
+                        "• Score Anomalía: <b>%{customdata[2]}</b><br>"
+                        "• Log: <i>%{customdata[3]}…</i><extra></extra>"
+                    ),
                 )
             )
 
+
         # Bandas de umbral
-        for y_val, label, color in [(0.4, "Bajo", "#10b981"), (0.7, "Alto", "#ef4444")]:
+        for y_val, label, color in [(0.4, "Bajo", "#10b981"), (0.7, "Alto", "#f43f5e")]:
             fig.add_hline(
-                y=y_val, line_dash="dot", line_color=color, opacity=0.5,
+                y=y_val,
+                line_dash="dot",
+                line_color=color,
+                opacity=0.4,
                 annotation_text=f"  Umbral {label}",
                 annotation_position="right",
                 annotation_font_size=9,
+                annotation_font_family="Inter, sans-serif",
             )
 
         layout = _layout_base(320)
         layout.update(
             hovermode="x unified",
             xaxis=dict(
-                gridcolor="#e2e8f0", title="Línea del Log",
-                showline=True, linecolor="#cbd5e1",
+                gridcolor="rgba(148, 163, 184, 0.12)",
+                title="Línea del Log",
+                showline=True,
+                linecolor="rgba(148, 163, 184, 0.2)",
             ),
             yaxis=dict(
-                gridcolor="#e2e8f0", title="Nivel de Riesgo (normalizado)",
-                showline=True, linecolor="#cbd5e1",
+                gridcolor="rgba(148, 163, 184, 0.12)",
+                title="Nivel de Riesgo (normalizado)",
+                showline=True,
+                linecolor="rgba(148, 163, 184, 0.2)",
                 range=[-0.05, 1.1],
                 tickformat=".0%",
             ),
             legend=dict(
-                orientation="h", yanchor="bottom", y=1.02,
-                xanchor="right", x=1,
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1,
+                font=dict(size=9, family="Inter, sans-serif")
             ),
         )
         fig.update_layout(**layout)
@@ -408,7 +469,7 @@ def render_pattern_analysis(logs: pd.DataFrame) -> None:
     st.subheader("🔬 Análisis de Patrones de Eventos")
     st.markdown(
         '<p class="section-note">Desglosa los patrones de logs más frecuentes y su relación '
-        'con anomalías detectadas por el modelo de ML.</p>',
+        "con anomalías detectadas por el modelo de ML.</p>",
         unsafe_allow_html=True,
     )
 
@@ -449,16 +510,22 @@ def render_pattern_analysis(logs: pd.DataFrame) -> None:
                 y="event_template",
                 orientation="h",
                 color="tasa_anomalia_%",
-                color_continuous_scale=["#0ea5e9", "#f97316", "#ef4444"],
+                # Colores coordinados del cielo al rosa
+                color_continuous_scale=["#0ea5e9", "#f59e0b", "#f43f5e"],
                 text="anomalias",
                 labels={"anomalias": "Anomalías", "event_template": "Plantilla"},
             )
-            fig_bar.update_traces(textposition="outside", textfont_size=10)
+            fig_bar.update_traces(
+                textposition="outside", 
+                textfont_size=9, 
+                textfont_family="Inter, sans-serif",
+                marker=dict(line=dict(width=0))
+            )
             layout = _layout_base(320)
             layout.update(
-                coloraxis_colorbar=dict(title="Tasa %", thickness=10),
-                yaxis=dict(autorange="reversed", tickfont=dict(size=9)),
-                xaxis=dict(title="Total anomalías"),
+                coloraxis_colorbar=dict(title="Tasa %", thickness=8, len=0.8, tickfont=dict(size=8)),
+                yaxis=dict(autorange="reversed", tickfont=dict(size=8, family="Inter, sans-serif")),
+                xaxis=dict(title="Total anomalías", gridcolor="rgba(148, 163, 184, 0.12)"),
             )
             fig_bar.update_layout(**layout)
             st.plotly_chart(fig_bar, use_container_width=True)
@@ -481,9 +548,9 @@ def render_pattern_analysis(logs: pd.DataFrame) -> None:
             )
             layout = _layout_base(320)
             layout.update(
-                xaxis=dict(gridcolor="#e2e8f0", title="Frecuencia Total"),
-                yaxis=dict(gridcolor="#e2e8f0", title="Score ML Máximo"),
-                legend=dict(font=dict(size=10)),
+                xaxis=dict(gridcolor="rgba(148, 163, 184, 0.12)", title="Frecuencia Total"),
+                yaxis=dict(gridcolor="rgba(148, 163, 184, 0.12)", title="Score ML Máximo"),
+                legend=dict(font=dict(size=9, family="Inter, sans-serif")),
             )
             fig_scatter.update_layout(**layout)
             st.plotly_chart(fig_scatter, use_container_width=True)
@@ -495,7 +562,9 @@ def render_pattern_analysis(logs: pd.DataFrame) -> None:
         use_container_width=True,
         hide_index=True,
         column_config={
-            "event_template": st.column_config.TextColumn("Plantilla Drain", width="large"),
+            "event_template": st.column_config.TextColumn(
+                "Plantilla Drain", width="large"
+            ),
             "cantidad": st.column_config.NumberColumn("Frecuencia", width="small"),
             "anomalias": st.column_config.NumberColumn("Anomalías", width="small"),
             "tasa_anomalia_%": st.column_config.ProgressColumn(
@@ -503,6 +572,8 @@ def render_pattern_analysis(logs: pd.DataFrame) -> None:
             ),
             "score_max": st.column_config.NumberColumn("Score Máx.", format="%.4f"),
             "score_medio": st.column_config.NumberColumn("Score Medio", format="%.4f"),
-            "severidad_dominante": st.column_config.TextColumn("Severidad", width="small"),
+            "severidad_dominante": st.column_config.TextColumn(
+                "Severidad", width="small"
+            ),
         },
     )

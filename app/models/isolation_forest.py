@@ -7,7 +7,9 @@ from sklearn.preprocessing import StandardScaler
 from app.config.settings import DEFAULT_CONTAMINATION, DEFAULT_RANDOM_STATE
 
 
-def detect_with_isolation_forest(tfidf, numeric: pd.DataFrame, contamination: float = DEFAULT_CONTAMINATION):
+def detect_with_isolation_forest(
+    tfidf, numeric: pd.DataFrame, contamination: float = DEFAULT_CONTAMINATION
+):
     scaler = StandardScaler()
     numeric_scaled = scaler.fit_transform(numeric)
     features = hstack([tfidf, numeric_scaled])

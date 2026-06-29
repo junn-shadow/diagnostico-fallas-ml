@@ -28,8 +28,10 @@ def check_distilbert_status(model_name: str = DISTILBERT_MODEL_NAME) -> ModelSta
     # Check local availability
     try:
         import os
+
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
         import torch
+
         torch.set_num_threads(1)
         from transformers import AutoModel, AutoTokenizer
 

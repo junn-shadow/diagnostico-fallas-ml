@@ -1,13 +1,13 @@
 import streamlit as st
 
 COLOR_MAP = {
-    "DEBUG":    "#64748b",
-    "INFO":     "#0ea5e9",
-    "WARNING":  "#f59e0b",
-    "WARN":     "#f59e0b",
-    "ERROR":    "#ef4444",
+    "DEBUG": "#64748b",
+    "INFO": "#0ea5e9",
+    "WARNING": "#f59e0b",
+    "WARN": "#f59e0b",
+    "ERROR": "#ef4444",
     "CRITICAL": "#b91c1c",
-    "FATAL":    "#7f1d1d",
+    "FATAL": "#7f1d1d",
 }
 
 
@@ -18,7 +18,9 @@ def render_metrics(logs) -> None:
     clusters = logs["semantic_cluster"].nunique()
     critical = int(logs["level"].isin(["CRITICAL", "FATAL"]).sum())
     anomaly_rate = (anomalies / total * 100) if total else 0
-    risk_score = min(100, round((critical * 18) + (errors * 9) + (anomalies * 12) + anomaly_rate))
+    risk_score = min(
+        100, round((critical * 18) + (errors * 9) + (anomalies * 12) + anomaly_rate)
+    )
 
     # Color semántico del riesgo
     if risk_score >= 70:
@@ -32,16 +34,16 @@ def render_metrics(logs) -> None:
         risk_label = "Bajo"
 
     cols = st.columns(5)
-    cols[0].metric("📄 Logs analizados",  f"{total:,}")
-    cols[1].metric("🔬 Anomalías ML",     anomalies, f"{anomaly_rate:.1f}% del total")
+    cols[0].metric("📄 Logs analizados", f"{total:,}")
+    cols[1].metric("🔬 Anomalías ML", anomalies, f"{anomaly_rate:.1f}% del total")
     cols[2].metric("⛔ Eventos de error", errors)
-    cols[3].metric("🧩 Familias NLP",     clusters)
+    cols[3].metric("🧩 Familias NLP", clusters)
     cols[4].metric(
         "🔴 Riesgo operativo",
         f"{risk_score}/100",
         delta=risk_label,
         delta_color="inverse" if risk_score >= 35 else "normal",
-        help="Índice compuesto de riesgo basado en anomalías, errores y eventos críticos."
+        help="Índice compuesto de riesgo basado en anomalías, errores y eventos críticos.",
     )
 
 
@@ -62,7 +64,9 @@ def render_status_strip(logs, backend: str) -> None:
         status_icon = "🟢"
         status_text = "Estable"
 
-    priority = "Alta" if (critical or anomalies > 2) else "Media" if anomalies else "Baja"
+    priority = (
+        "Alta" if (critical or anomalies > 2) else "Media" if anomalies else "Baja"
+    )
 
     st.markdown(
         f"""
