@@ -232,7 +232,13 @@ if st.session_state.get("is_historical_view", False) and "last_result" in st.ses
 
 with st.sidebar:
     uploaded = st.file_uploader("Fuente de logs", type=["log", "txt"])
-    use_sample = st.toggle("Usar dataset de muestra", value=uploaded is None)
+    is_file_too_large = False
+    if uploaded is not None:
+        file_size_mb = uploaded.size / (1024 * 1024)
+        if file_size_mb > 15.0:
+            st.error(f"⚠️ El archivo supera los 15 MB ({file_size_mb:.1f} MB). Para evitar caídas por falta de memoria en Streamlit Cloud, por favor reduce el tamaño del archivo.")
+            is_file_too_large = True
+    use_sample = st.toggle("Usar dataset de muestra", value=uploaded is None and not is_file_too_large)
     persist = st.toggle("Persistir incidentes", value=True)
     auto_run = st.toggle("Analizar al cargar", value=False)
 
@@ -316,7 +322,7 @@ with st.sidebar:
 
     st.markdown("<br>", unsafe_allow_html=True)
     run_button = st.button(
-        "Ejecutar diagnóstico", type="primary", use_container_width=True
+        "Ejecutar diagnóstico", type="primary", use_container_width=True, disabled=is_file_too_large
     )
 
 
@@ -372,13 +378,13 @@ current_params = {
 previous_params = st.session_state.get("last_params", {})
 
 should_run = (
-    run_button
-    or st.session_state.get("welcome_run", False)
-    or ("last_result" not in st.session_state and auto_run)
+    (run_button and not is_file_too_large)
+    or (st.session_state.get("welcome_run", False) and not is_file_too_large)
+    or ("last_result" not in st.session_state and auto_run and not is_file_too_large)
 )
 
 # Si auto_run está activo y hay resultados anteriores, detectar cambios en cualquiera de las herramientas
-if auto_run and "last_result" in st.session_state:
+if auto_run and "last_result" in st.session_state and not is_file_too_large:
     if current_params != previous_params:
         should_run = True
 

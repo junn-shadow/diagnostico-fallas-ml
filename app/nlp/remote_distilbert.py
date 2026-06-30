@@ -68,7 +68,7 @@ class RemoteSemanticEmbedder:
         return arr
 
     # ------------------------------------------------------------------
-    def encode(self, texts: List[str], batch_size: int = 16) -> np.ndarray:
+    def encode(self, texts: List[str], batch_size: int = 256) -> np.ndarray:
         if not HF_API_TOKEN:
             raise RuntimeError(
                 "HF_API_TOKEN no está configurado. "
