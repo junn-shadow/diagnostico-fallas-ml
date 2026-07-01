@@ -2,4 +2,6 @@
 maxUploadSize = 1024
 maxMessageSize = 1024
 fileWatcherType = "none"
+enableXsrfProtection = false
+
 

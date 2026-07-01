@@ -22,4 +22,4 @@ COPY --chown=user . .
 EXPOSE 7860
 
 # Ejecuta Streamlit apuntando a tu archivo específico
-CMD ["streamlit", "run", "app/dashboard/streamlit_app.py", "--server.address=0.0.0.0", "--server.port=7860"]
+CMD ["streamlit", "run", "app/dashboard/streamlit_app.py", "--server.address=0.0.0.0", "--server.port=7860", "--server.enableXsrfProtection=false"]
