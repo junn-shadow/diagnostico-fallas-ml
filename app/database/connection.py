@@ -4,12 +4,17 @@ import sqlalchemy as sa
 from app.config.paths import DATABASE_PATH
 
 def _get_secret_safe(key):
+    val = None
     if key in os.environ:
-        return os.environ[key]
-    try:
-        return st.secrets.get(key)
-    except Exception:
-        return None
+        val = os.environ[key]
+    else:
+        try:
+            val = st.secrets.get(key)
+        except Exception:
+            pass
+    if val:
+        return str(val).strip().strip("'").strip('"')
+    return None
 
 def get_connection():
     # 1. Intentamos buscar credenciales de Turso

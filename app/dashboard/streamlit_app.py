@@ -1529,4 +1529,4 @@ with tab_history:
                             "Escribe un término arriba para realizar una consulta global en la base de datos local."
                         )
     except Exception as exc:
-        st.warning(f"Error al interactuar con el historial Supabase: {exc}")
+        st.warning(f"Error al interactuar con la Base de Datos (verifica tus credenciales o token): {exc}")
