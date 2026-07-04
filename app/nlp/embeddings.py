@@ -21,13 +21,13 @@ def create_embeddings(texts: list[str], force_backend: str = None):
             logger.info("Embeddings generados exitosamente via HF Inference API.")
             return embs, embedder.backend
         except Exception as exc:
-            logger.warning(
-                "Error en DistilBERT remoto [%s]: %s. Realizando fallback a TF-IDF.",
-                exc.__class__.__name__,
-                exc,
-            )
-            # Fallback inmediato a TF-IDF para evitar bloqueos y lentitud de CPU local
-            force_backend = "tfidf"
+            error_msg = str(exc)
+            if hasattr(exc, "response") and hasattr(exc.response, "text"):
+                error_msg += f" | Detalle: {exc.response.text}"
+            logger.warning("Error en DistilBERT remoto: %s. Realizando fallback a TF-IDF.", error_msg)
+            # Fallback inmediato a TF-IDF
+            embedder = SemanticEmbedder(force_backend="tfidf")
+            return embedder.encode(texts), f"TF-IDF fallback (API Falló: {error_msg[:80]})"
 
     embedder = SemanticEmbedder(force_backend=force_backend)
     return embedder.encode(texts), embedder.backend

@@ -15,7 +15,7 @@ class RemoteSemanticEmbedder:
     Falls back gracefully if the token is missing or the API fails.
     """
 
-    def __init__(self, model_name: str = DISTILBERT_MODEL_NAME, timeout: int = 15):
+    def __init__(self, model_name: str = DISTILBERT_MODEL_NAME, timeout: int = 35):
         self.model_name = model_name
         self.api_url = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{model_name}"
         self.headers = (
@@ -68,7 +68,7 @@ class RemoteSemanticEmbedder:
         return arr
 
     # ------------------------------------------------------------------
-    def encode(self, texts: List[str], batch_size: int = 256) -> np.ndarray:
+    def encode(self, texts: List[str], batch_size: int = 50) -> np.ndarray:
         if not HF_API_TOKEN:
             raise RuntimeError(
                 "HF_API_TOKEN no está configurado. "
