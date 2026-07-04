@@ -1,4 +1,13 @@
-﻿# Diagnostico Automatico de Fallas con Machine Learning y NLP
+---
+title: Diagnostico Automatico de Fallas con Machine Learning y NLP
+emoji: 🛠️
+colorFrom: blue
+colorTo: red
+sdk: docker
+app_port: 7860
+---
+
+# Diagnostico Automatico de Fallas con Machine Learning y NLP
 
 Sistema desarrollado en Python para analizar logs de servidores, detectar anomalias mediante tecnicas de Machine Learning no supervisado y sugerir posibles causas raiz utilizando NLP.
 
@@ -10,6 +19,7 @@ Sistema desarrollado en Python para analizar logs de servidores, detectar anomal
 - Correlacion de eventos y recomendaciones automaticas.
 - Dashboard interactivo con Streamlit.
 - **Base de conocimientos SQLite** con persistencia de logs crudos e incidentes.
+
 
 ## Estructura del proyecto
 

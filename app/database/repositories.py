@@ -182,6 +182,13 @@ class LogRepository:
         source: Optional[str] = None,
     ) -> None:
         """Inserta un unico log crudo en la base de conocimientos."""
+        import os
+        import streamlit as st
+        is_cloud_db = ("TURSO_DATABASE_URL" in st.secrets or "SUPABASE_URL" in st.secrets or
+                      os.getenv("TURSO_DATABASE_URL") or os.getenv("SUPABASE_URL"))
+        if is_cloud_db:
+            return  # No guardar logs individuales en la nube (ahorro de cuota de escritura/espacio)
+
         init_db()
         with get_connection() as conn:
             conn.execute(
@@ -203,6 +210,14 @@ class LogRepository:
         """
         if not records:
             return 0
+
+        import os
+        import streamlit as st
+        is_cloud_db = ("TURSO_DATABASE_URL" in st.secrets or "SUPABASE_URL" in st.secrets or
+                      os.getenv("TURSO_DATABASE_URL") or os.getenv("SUPABASE_URL"))
+        if is_cloud_db:
+            return len(records)  # Simular inserción exitosa para no romper el pipeline en la nube
+
         init_db()
         rows = [
             (

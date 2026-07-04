@@ -62,8 +62,8 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
-    is_dark_mode = st.toggle("🌙 Modo Oscuro", value=True, help="Alterna entre tema claro y oscuro.")
-    focus_mode = st.toggle("🔍 Modo Enfoque", value=False, help="Oculta descripciones secundarias y notas para centrar la atención en los datos.")
+    is_dark_mode = st.toggle("Modo Oscuro", value=True, help="Alterna entre tema claro y oscuro.")
+    focus_mode = st.toggle("Modo Enfoque", value=False, help="Oculta descripciones secundarias y notas para centrar la atención en los datos.")
 
 
 if is_dark_mode:
@@ -85,9 +85,9 @@ if is_dark_mode:
         --success:          #10b981;
         --warning:          #f59e0b;
         --danger:           #f43f5e;
-        --card-bg:          rgba(30, 41, 59, 0.7);
-        --card-shadow:      0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --card-hover-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --card-bg:          rgba(15, 23, 42, 0.45);
+        --card-shadow:      0 8px 32px 0 rgba(0, 0, 0, 0.35);
+        --card-hover-shadow:0 12px 40px 0 rgba(0, 0, 0, 0.45);
         --radius-sm:        6px;
         --radius-md:        10px;
         --radius-lg:        14px;
@@ -117,9 +117,9 @@ else:
         --success:          #059669;
         --warning:          #d97706;
         --danger:           #e11d48;
-        --card-bg:          rgba(255, 255, 255, 0.85);
-        --card-shadow:      0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-        --card-hover-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+        --card-bg:          rgba(255, 255, 255, 0.65);
+        --card-shadow:      0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        --card-hover-shadow:0 12px 40px 0 rgba(31, 38, 135, 0.12);
         --radius-sm:        6px;
         --radius-md:        10px;
         --radius-lg:        14px;
@@ -187,7 +187,39 @@ if _hero_has_result:
 </div>
 """
 else:
-    hero_badge_html = ""
+    # Calcular estadísticas globales del historial para la cabecera cuando no hay resultado activo
+    try:
+        runs_df_global = list_runs()
+        num_runs = len(runs_df_global)
+        summary_global = get_incident_summary()
+        total_anomalies_global = summary_global.get("anomalies", 0)
+        total_errors_global = summary_global.get("errors", 0)
+    except Exception:
+        runs_df_global = None
+        num_runs = 0
+        total_anomalies_global = 0
+        total_errors_global = 0
+
+    model_status = get_distilbert_status()
+    if model_status.available_remote:
+        nlp_status_str = "DistilBERT Remoto"
+    elif model_status.available_locally:
+        nlp_status_str = "DistilBERT Local"
+    else:
+        nlp_status_str = "TF-IDF (Offline)"
+
+    hero_badge_html = f"""
+<div style="text-align:right;min-width:200px;">
+<div style="background:#0ea5e9;color:#fff;border-radius:8px;padding:0.4rem 0.8rem;font-weight:700;font-size:0.75rem;letter-spacing:0.05em;margin-bottom:0.3rem;text-align:center;">
+📊 PLATAFORMA ACTIVA
+</div>
+<div style="font-size:0.72rem;color:var(--text-subtle);line-height:1.45;text-align:right;">
+<strong>{num_runs}</strong> análisis guardados<br>
+<strong>{total_anomalies_global}</strong> anomalías en BD<br>
+🤖 {nlp_status_str}
+</div>
+</div>
+"""
 
 st.markdown(
     f"""
@@ -235,8 +267,8 @@ with st.sidebar:
     is_file_too_large = False
     if uploaded is not None:
         file_size_mb = uploaded.size / (1024 * 1024)
-        if file_size_mb > 15.0:
-            st.error(f"⚠️ El archivo supera los 15 MB ({file_size_mb:.1f} MB). Para evitar caídas por falta de memoria en Streamlit Cloud, por favor reduce el tamaño del archivo.")
+        if file_size_mb > 300:
+            st.error(f"El archivo supera los 300 MB ({file_size_mb:.1f} MB). Por favor, reduce el tamaño del archivo o procesa un fragmento más pequeño.")
             is_file_too_large = True
     use_sample = st.toggle("Usar dataset de muestra", value=uploaded is None and not is_file_too_large)
     persist = st.toggle("Persistir incidentes", value=True)
@@ -248,7 +280,7 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
     contamination = st.slider(
-        "🎯 Contaminación (Isolation Forest)",
+        "Contaminación (Isolation Forest)",
         min_value=0.01,
         max_value=0.50,
         value=0.15,
@@ -577,7 +609,7 @@ if "last_result" in st.session_state:
                 )
 
         st.divider()
-        st.subheader("📊 Evaluación de Calidad del Clustering")
+        st.subheader("Evaluación de Calidad del Clustering")
         eval_cols = st.columns(2)
         eval_cols[0].metric(
             label="Coeficiente de Silueta (Silhouette Score)",
@@ -623,9 +655,9 @@ if "last_result" in st.session_state:
 
         # Sección de exportación del reporte de diagnóstico
         st.markdown("<br>", unsafe_allow_html=True)
-        st.subheader("📥 Exportar Diagnóstico de logs")
+        st.subheader("Exportar Diagnóstico de logs")
 
-        with st.expander("📥 Descargar Reporte de Diagnóstico", expanded=False):
+        with st.expander("Descargar Reporte de Diagnóstico", expanded=False):
             st.markdown(
                 '<p class="section-note">Genera e informa reportes del estado operativo en múltiples formatos (HTML, JSON, CSV o Excel nativo) para análisis externos.</p>',
                 unsafe_allow_html=True,
@@ -638,7 +670,7 @@ if "last_result" in st.session_state:
 
             if st.session_state[run_key] is None:
                 st.info("Haz clic en el botón de abajo para generar los reportes de descarga. Esto evita demoras y reduce el uso de memoria.")
-                if st.button("⚙️ Generar Archivos de Reporte", key=f"btn_gen_{result.run_id}", use_container_width=True):
+                if st.button("Generar Archivos de Reporte", key=f"btn_gen_{result.run_id}", use_container_width=True):
                     with st.spinner("Generando reportes (HTML, JSON, CSV, XLSX)..."):
                         html_report = generate_html_report(logs, result)
                         json_report = generate_json_report(logs, result)
@@ -666,7 +698,7 @@ if "last_result" in st.session_state:
                 dl_col1, dl_col2, dl_col3, dl_col4 = st.columns(4)
                 with dl_col1:
                     st.download_button(
-                        label="📄 Reporte HTML (Ejecutivo)",
+                        label="Reporte HTML (Ejecutivo)",
                         data=reports["html"],
                         file_name=f"reporte_diagnostico_{result.run_id}.html",
                         mime="text/html",
@@ -674,7 +706,7 @@ if "last_result" in st.session_state:
                     )
                 with dl_col2:
                     st.download_button(
-                        label="💻 Datos JSON (API)",
+                        label="Datos JSON (API)",
                         data=reports["json"],
                         file_name=f"reporte_diagnostico_{result.run_id}.json",
                         mime="application/json",
@@ -682,7 +714,7 @@ if "last_result" in st.session_state:
                     )
                 with dl_col3:
                     st.download_button(
-                        label="📊 Tabla CSV (Excel)",
+                        label="Tabla CSV (Excel)",
                         data=reports["csv"],
                         file_name=f"anomalias_{result.run_id}.csv",
                         mime="text/csv",
@@ -691,7 +723,7 @@ if "last_result" in st.session_state:
                 with dl_col4:
                     if reports["xlsx_available"] and len(reports["xlsx"]) > 200:
                         st.download_button(
-                            label="🟢 Documento XLSX (Excel)",
+                            label="Documento XLSX (Excel)",
                             data=reports["xlsx"],
                             file_name=f"reporte_completo_{result.run_id}.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -699,14 +731,14 @@ if "last_result" in st.session_state:
                         )
                     else:
                         st.button(
-                            label="🟢 XLSX no disponible",
+                            label="XLSX no disponible",
                             disabled=True,
                             use_container_width=True,
                             help="Para descargar en XLSX, instala openpyxl en el entorno local.",
                         )
                 
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("🔄 Volver a generar reportes", key=f"btn_regen_{result.run_id}", use_container_width=True):
+                if st.button("Volver a generar reportes", key=f"btn_regen_{result.run_id}", use_container_width=True):
                     st.session_state[run_key] = None
                     st.rerun()
 
@@ -724,7 +756,7 @@ if "last_result" in st.session_state:
 
     with tab_data:
         render_breadcrumb("Explorador")
-        st.subheader("🗂 Explorador de Eventos")
+        st.subheader("Explorador de Eventos")
         st.markdown(
             '<p class="section-note">Inspecciona todos los eventos del log con sus atributos completos. Filtra por severidad y cluster desde el panel lateral.</p>',
             unsafe_allow_html=True,
@@ -742,7 +774,7 @@ if "last_result" in st.session_state:
             column_config={
                 "line_id": st.column_config.NumberColumn("Línea", width="small"),
                 "level": st.column_config.TextColumn("Severidad", width="small"),
-                "is_anomaly": st.column_config.CheckboxColumn("◆ ML", width="small"),
+                "is_anomaly": st.column_config.CheckboxColumn("ML", width="small"),
                 "raw_log": st.column_config.TextColumn("Log Original", width="large"),
                 "clean_log": st.column_config.TextColumn("Log Limpio", width="large"),
                 "event_template": st.column_config.TextColumn(
@@ -764,32 +796,236 @@ else:
     with tab_overview:
         st.markdown(
             """
-            <div class="welcome-container">
-                <div class="welcome-icon">🔬</div>
-                <h2 class="welcome-title">Listo para Iniciar el Análisis</h2>
-                <p class="welcome-text">
-                    Carga un archivo de logs en el panel lateral o utiliza el dataset de muestra para descubrir patrones, 
-                    anomalías y causas raíz operativas con inteligencia artificial.
+            <div style="text-align: center; margin-bottom: 1.5rem; margin-top: 1rem;">
+                <h2 class="welcome-title" style="font-size: 2rem !important; margin-bottom: 0.5rem;">Panel de Control Operativo</h2>
+                <p style="color: var(--text-subtle); max-width: 600px; margin: 0 auto 1.5rem; font-size: 0.95rem;">
+                    Bienvenido a DiagnosticOps. Carga un archivo de logs en el panel lateral o selecciona una de las opciones rápidas a continuación para comenzar el análisis inteligente.
                 </p>
-                <div class="welcome-steps">
-                    <div class="welcome-step"><span>1</span> <div><strong>Ingesta inteligente:</strong> Carga archivos de log estructurados o crudos.</div></div>
-                    <div class="welcome-step"><span>2</span> <div><strong>Detección con ML:</strong> Análisis estadístico no supervisado (Isolation Forest).</div></div>
-                    <div class="welcome-step"><span>3</span> <div><strong>Enriquecimiento NLP:</strong> Clasificación semántica de errores y recomendaciones automáticas.</div></div>
+            </div>
+            
+            <div class="pipeline-stepper">
+                <div class="stepper-step">
+                    <div>
+                        <strong>Ingesta y Parsing</strong>
+                        <span>Drain templates</span>
+                    </div>
+                </div>
+                <div class="stepper-divider"></div>
+                <div class="stepper-step">
+                    <div>
+                        <strong>Detección con ML</strong>
+                        <span>Isolation Forest</span>
+                    </div>
+                </div>
+                <div class="stepper-divider"></div>
+                <div class="stepper-step">
+                    <div>
+                        <strong>Enriquecimiento NLP</strong>
+                        <span>Causa Raíz y Acción</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+                <div style="background: rgba(14, 165, 233, 0.03); border: 1px solid rgba(14, 165, 233, 0.15); padding: 1.25rem; border-radius: var(--radius-md);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <h4 style="margin: 0; font-size: 1rem; color: var(--accent);">¿Qué son los Logs?</h4>
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+                        Son el registro vital de tu infraestructura. <strong>DiagnosticOps</strong> procesa estos archivos masivos automáticamente, aislando mediante Machine Learning aquellos eventos atípicos (anomalías) que los sistemas de monitoreo tradicionales suelen omitir.
+                    </p>
+                </div>
+                <div style="background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.15); padding: 1.25rem; border-radius: var(--radius-md);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="display:inline-block; width:8px; height:8px; background-color:#10b981; border-radius:50%; box-shadow: 0 0 8px #10b981;"></span> PLATAFORMA ACTIVA
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+                        Usando Modelos Avanzados (DistilBERT), nuestro motor de <strong>Procesamiento de Lenguaje Natural</strong> "lee y comprende" el texto de los errores. Esto permite agrupar fallas por semántica y sugerir la Causa Raíz exacta de forma casi instantánea.
+                    </p>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        col_w1, col_w2, col_w3 = st.columns([1, 2, 1])
-        with col_w2:
-            if st.button(
-                "🚀 Iniciar Diagnóstico de Logs",
-                type="primary",
-                use_container_width=True,
-                key="welcome_run_btn",
-            ):
+
+        try:
+            runs_df_global = list_runs()
+            num_runs = len(runs_df_global)
+            summary_global = get_incident_summary()
+            total_anomalies_global = summary_global.get("anomalies", 0)
+            total_errors_global = summary_global.get("errors", 0)
+        except Exception:
+            runs_df_global = None
+            num_runs = 0
+            total_anomalies_global = 0
+            total_errors_global = 0
+
+        if runs_df_global is not None and not runs_df_global.empty:
+            st.markdown('<div class="sidebar-section-label" style="font-size:0.85rem; margin-bottom: 0.75rem;">Métricas de Actividad Histórica</div>', unsafe_allow_html=True)
+            m_col1, m_col2, m_col3 = st.columns(3)
+            with m_col1:
+                st.metric(label="Historial de Archivos Analizados", value=f"{num_runs} logs")
+            with m_col2:
+                st.metric(label="Anomalías Totales Detectadas", value=f"{total_anomalies_global} alertas")
+            with m_col3:
+                st.metric(label="Incidentes de Severidad Crítica", value=f"{total_errors_global} errores")
+            
+            # Gráfico interactivo comparativo de ejecuciones recientes
+            st.markdown("<br>", unsafe_allow_html=True)
+            chart_df = runs_df_global.head(8)[["log_source", "anomalies", "errors"]].copy()
+            chart_df = chart_df.rename(columns={"anomalies": "Anomalías ML", "errors": "Errores de Log"})
+            chart_df = chart_df.set_index("log_source")
+            st.bar_chart(chart_df, height=180, use_container_width=True)
+            st.markdown("<br>", unsafe_allow_html=True)
+
+
+        st.markdown(
+            """
+            <div style="margin-top: 1.5rem; margin-bottom: 2rem;">
+                <div class="sidebar-section-label" style="font-size:0.85rem; margin-bottom: 0.75rem;">Capacidades Core del Sistema</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: var(--radius-md); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                        <strong style="font-size: 0.95rem; color: var(--text-main); display: block; margin-bottom: 0.25rem;">Parsing Eficiente (Drain)</strong>
+                        <span style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; display: block;">Extracción dinámica de plantillas y parámetros desde logs crudos.</span>
+                    </div>
+                    <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: var(--radius-md); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                        <strong style="font-size: 0.95rem; color: var(--text-main); display: block; margin-bottom: 0.25rem;">Detección de Anomalías</strong>
+                        <span style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; display: block;">Algoritmo Isolation Forest para identificar comportamientos atípicos.</span>
+                    </div>
+                    <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: var(--radius-md); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                        <strong style="font-size: 0.95rem; color: var(--text-main); display: block; margin-bottom: 0.25rem;">Correlación Semántica</strong>
+                        <span style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; display: block;">Agrupamiento de errores por contexto utilizando embeddings NLP.</span>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown('<div class="sidebar-section-label" style="font-size:0.85rem; margin-bottom: 0.75rem; margin-top: 2rem;">Opciones de Inicio Rápido</div>', unsafe_allow_html=True)
+        col_left, col_right = st.columns(2)
+
+        with col_left:
+            st.markdown(
+                """
+                <div class="dataset-selector-card">
+                    <span class="eyebrow" style="color: var(--accent);">Demo del Sistema</span>
+                    <h3 style="margin-top:0.25rem; font-size: 1.2rem; color: var(--text-main);">Dataset de Muestra (sample.log)</h3>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); min-height: 70px; line-height: 1.4; margin-bottom: 1rem;">
+                        Ejecuta el pipeline ML con un log predeterminado. Contiene registros de servidores web,
+                        timeouts de bases de datos y excepciones semánticas de prueba para evaluar los algoritmos de detección.
+                    </p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button("Analizar Dataset de Muestra", type="primary", use_container_width=True, key="btn_run_sample_home"):
                 st.session_state["welcome_run"] = True
                 st.rerun()
+
+        with col_right:
+            st.markdown(
+                """
+                <div class="dataset-selector-card">
+                    <span class="eyebrow" style="color: var(--warning);">Subida de Archivos</span>
+                    <h3 style="margin-top:0.25rem; font-size: 1.2rem; color: var(--text-main);">Analizar Archivo Personalizado</h3>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); min-height: 70px; line-height: 1.4; margin-bottom: 1rem;">
+                        Sube tus propios archivos de logs (.log, .txt) usando el cargador en la barra lateral izquierda. 
+                        Soporta normalización Drain, Isolation Forest para detección de anomalías y agrupamiento semántico NLP.
+                    </p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
+        # Mostrar ejecuciones recientes para cargar directamente
+        if runs_df_global is not None and not runs_df_global.empty:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown('<div class="sidebar-section-label" style="font-size:0.85rem; margin-bottom: 0.75rem;">Cargar Ejecuciones Recientes</div>', unsafe_allow_html=True)
+            
+            recent_runs = runs_df_global.head(3)
+            for idx, r_row in recent_runs.iterrows():
+                r_id = r_row["run_id"]
+                r_source = r_row["log_source"]
+                r_time = r_row["created_at"]
+                r_events = int(r_row["total_events"])
+                r_anoms = int(r_row["anomalies"])
+                r_errors = int(r_row["errors"])
+
+                col_run_info, col_run_action = st.columns([3, 1])
+                with col_run_info:
+                    st.markdown(
+                        f"""
+                        <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 0.85rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; min-height: 60px;">
+                            <div>
+                                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;"> {r_time}</span>
+                                <strong style="font-size: 0.9rem; color: var(--text-main);">{r_source}</strong>
+                            </div>
+                            <div style="text-align: right; font-size: 0.8rem; color: var(--text-subtle);">
+                                <span style="background: rgba(14, 165, 233, 0.1); color: var(--accent); padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; margin-right: 0.5rem;">{r_events} eventos</span>
+                                <span style="background: rgba(244, 63, 94, 0.1); color: var(--danger); padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; margin-right: 0.5rem;">{r_anoms} anomalías</span>
+                                <span style="background: rgba(245, 158, 11, 0.1); color: var(--warning); padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600;">{r_errors} errores</span>
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                with col_run_action:
+                    # Botón para cargar esta ejecución
+                    if st.button("Cargar en Dashboard", key=f"btn_load_run_home_{r_id}", use_container_width=True):
+                        from app.services.pipeline_service import PipelineResult
+                        from app.database.connection import get_connection
+                        import sqlalchemy as sa
+                        
+                        with st.spinner("Cargando ejecución histórica..."):
+                            with get_connection() as conn:
+                                restore_df = pd.read_sql_query(
+                                    sa.text("SELECT * FROM incidents WHERE run_id = :run_id ORDER BY line_id ASC"),
+                                    conn,
+                                    params={"run_id": r_id},
+                                )
+                            
+                            if "clean_log" not in restore_df.columns:
+                                restore_df["clean_log"] = restore_df["raw_log"]
+                            restore_df["is_anomaly"] = restore_df["is_anomaly"].astype(bool)
+
+                            stages = [
+                                {"stage": "Carga Histórica", "status": "Completado", "detail": "Restaurado desde SQLite"},
+                                {"stage": "Incidentes", "status": "Completado", "detail": f"{len(restore_df):,} anomalías/errores cargados"},
+                            ]
+
+                            restored_result = PipelineResult(
+                                logs=restore_df,
+                                semantic_backend="Historial SQLite",
+                                saved_incidents=len(restore_df),
+                                profile={
+                                    "file_name": r_source,
+                                    "size_mb": "Historial",
+                                    "non_empty_lines": len(restore_df),
+                                },
+                                stages=stages,
+                                statistical_backend="Historial",
+                                semantic_scope="Alertas persistidas",
+                                persistence_error=None,
+                                silhouette_score=0.0,
+                                davies_bouldin_index=0.0,
+                                run_id=r_id,
+                                log_source=r_source,
+                            )
+
+                            st.session_state["last_result"] = restored_result
+                            st.session_state["is_historical_view"] = True
+                            st.session_state["last_params"] = {
+                                "source": r_source,
+                                "contamination": 0.15,
+                                "clustering_method": "auto",
+                                "clustering_eps": 0.8,
+                                "clustering_min_samples": 2,
+                                "clustering_n_clusters": 5,
+                                "nlp_backend": "auto",
+                            }
+                            st.rerun()
 
     with tab_alerts:
         st.info("Carga un archivo de logs en el panel lateral o usa el dataset de muestra para ver las alertas.")
@@ -822,8 +1058,8 @@ with tab_history:
             # Selector de modo: Individual o Comparación
             compare_mode = False
             if len(runs_df) >= 2:
-                compare_mode = st.checkbox(
-                    "🔍 Activar Comparador de Ejecuciones (Comparar dos logs históricos)",
+                compare_mode = st.toggle(
+                    "Activar Comparador de Ejecuciones (Comparar dos logs históricos)",
                     value=False,
                 )
 
@@ -850,7 +1086,7 @@ with tab_history:
 
                 if run_id_a == run_id_b:
                     st.warning(
-                        "⚠️ Selecciona dos ejecuciones distintas para poder compararlas."
+                        "Selecciona dos ejecuciones distintas para poder compararlas."
                     )
                 else:
 
@@ -867,7 +1103,7 @@ with tab_history:
                             else "Sin cambio"
                         )
 
-                    st.markdown("### 📊 Comparativa de Métricas de Riesgo")
+                    st.markdown("### Comparativa de Métricas de Riesgo")
                     m_col1, m_col2, m_col3 = st.columns(3)
 
                     diff_events = row_b["total_events"] - row_a["total_events"]
@@ -908,16 +1144,16 @@ with tab_history:
                     new_templates = templates_b - templates_a
                     resolved_templates = templates_a - templates_b
 
-                    st.markdown("### 🔍 Análisis de Patrones de Logs")
+                    st.markdown("### Análisis de Patrones de Logs")
 
                     exp_new = st.expander(
-                        f"🆕 Nuevos Patrones en Ejecución B ({len(new_templates)})",
+                        f"Nuevos Patrones en Ejecución B ({len(new_templates)})",
                         expanded=True,
                     )
                     with exp_new:
                         if new_templates:
                             st.markdown(
-                                "Los siguientes patrones de logs ocurrieron en la Ejecución B pero **no estaban presentes** en la Ejecución A:"
+                                "Los siguientes patrones de logs ocurrieron en la Ejecución B pero no estaban presentes en la Ejecución A:"
                             )
                             for t in list(new_templates)[:20]:
                                 st.code(t, language="text")
@@ -927,17 +1163,17 @@ with tab_history:
                                 )
                         else:
                             st.success(
-                                "✅ No se encontraron patrones de error nuevos en la Ejecución B."
+                                "No se encontraron patrones de error nuevos en la Ejecución B."
                             )
 
                     exp_res = st.expander(
-                        f"✅ Patrones Resueltos/Ausentes en Ejecución B ({len(resolved_templates)})",
+                        f"Patrones Resueltos/Ausentes en Ejecución B ({len(resolved_templates)})",
                         expanded=False,
                     )
                     with exp_res:
                         if resolved_templates:
                             st.markdown(
-                                "Los siguientes patrones de logs ocurrieron en la Ejecución A pero **ya no están presentes** en la Ejecución B:"
+                                "Los siguientes patrones de logs ocurrieron en la Ejecución A pero ya no están presentes en la Ejecución B:"
                             )
                             for t in list(resolved_templates)[:20]:
                                 st.code(t, language="text")
@@ -1071,7 +1307,7 @@ with tab_history:
 
                     if st.session_state[hist_key] is None:
                         st.info("Haz clic en el botón de abajo para preparar los archivos de descarga para esta ejecución histórica.")
-                        if st.button("⚙️ Preparar descargas para esta ejecución", key=f"btn_gen_hist_{sel_run_id}", use_container_width=True):
+                        if st.button("Preparar descargas para esta ejecución", key=f"btn_gen_hist_{sel_run_id}", use_container_width=True):
                             with st.spinner("Cargando incidentes del historial y generando reportes..."):
                                 # Consultar incidentes completos para este run_id (evitando el límite de 200 de list_incidents)
                                 from app.database.connection import get_connection
@@ -1159,7 +1395,7 @@ with tab_history:
                             use_container_width=True,
                         )
                         h_dl3.download_button(
-                            label="📊 Tabla CSV Histórica",
+                            label="Tabla CSV Histórica",
                             data=h_reports["csv"],
                             file_name=f"alertas_historicas_{sel_run_id}.csv",
                             mime="text/csv",
@@ -1192,7 +1428,7 @@ with tab_history:
 
 
                     # Mostrar incidentes en un dataframe interactivo
-                    st.markdown("##### 🔍 Eventos guardados")
+                    st.markdown("##### Eventos guardados")
                     st.dataframe(
                         hist_incidents,
                         width="stretch",

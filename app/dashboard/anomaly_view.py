@@ -28,7 +28,7 @@ def render_anomalies(logs: pd.DataFrame) -> None:
     # Encabezado con contador de alertas activas
     col_h, col_badge = st.columns([3, 1])
     with col_h:
-        st.subheader("🚨 Bandeja de Alertas Activas")
+        st.subheader("Bandeja de Alertas Activas")
         st.markdown(
             '<p class="section-note">Eventos priorizados por severidad y score ML. '
             "Empieza por las filas marcadas con ◆ o nivel CRITICAL.</p>",
@@ -113,7 +113,7 @@ def render_anomalies(logs: pd.DataFrame) -> None:
     ]
 
     if alerts.empty:
-        st.success("✅ No hay alertas activas con los filtros actuales.")
+        st.success("No hay alertas activas con los filtros actuales.")
         return
 
     min_score = (

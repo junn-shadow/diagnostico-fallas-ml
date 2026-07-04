@@ -3,24 +3,44 @@ import streamlit as st
 import sqlalchemy as sa
 
 def get_connection():
-    # 1. Buscamos primero en los Secrets de Streamlit (tanto local como en la nube)
-    if "SUPABASE_URL" in st.secrets:
-        db_url = st.secrets["SUPABASE_URL"]
-    else:
-        # Alternativa por si se ejecuta fuera de Streamlit (ej. un script de terminal)
-        db_url = os.getenv("SUPABASE_URL")
+    # 1. Intentamos buscar credenciales de Turso (Bajo libSQL/SQLite en la nube)
+    turso_url = st.secrets.get("TURSO_DATABASE_URL") or os.getenv("TURSO_DATABASE_URL")
+    turso_token = st.secrets.get("TURSO_AUTH_TOKEN") or os.getenv("TURSO_AUTH_TOKEN")
+
+    if turso_url and turso_token:
+        # Si la URL viene como libsql://, la adaptamos para SQLAlchemy con sqlite+libsql://
+        db_url = turso_url
+        if db_url.startswith("libsql://"):
+            db_url = db_url.replace("libsql://", "sqlite+libsql://")
+        elif not db_url.startswith("sqlite+libsql://"):
+            db_url = f"sqlite+libsql://{db_url}"
+            
+        # Para evitar el error 308 Permanent Redirect, nos aseguramos de usar conexión segura
+        if "?" not in db_url:
+            db_url = f"{db_url}?secure=true"
+        elif "secure=" not in db_url:
+            db_url = f"{db_url}&secure=true"
+            
+        # Conexión a Turso utilizando el dialecto de libsql
+        engine = sa.create_engine(
+            db_url,
+            connect_args={"auth_token": turso_token}
+        )
+        return engine.connect()
+
+    # 2. Si no hay Turso, hacemos fallback a Supabase (PostgreSQL)
+    supabase_url = st.secrets.get("SUPABASE_URL") or os.getenv("SUPABASE_URL")
         
-    if not db_url:
+    if not supabase_url:
         raise RuntimeError(
-            "⚠️ No se encontró la variable SUPABASE_URL. "
-            "Asegúrate de agregarla en .streamlit/secrets.toml localmente o en los Secrets de Streamlit Cloud."
+            "⚠️ No se encontró la variable de conexión de base de datos (TURSO_DATABASE_URL o SUPABASE_URL). "
+            "Asegúrate de agregar alguna en .streamlit/secrets.toml localmente o en los Secrets de tu hosting."
         )
 
-    # 2. Creamos la conexión con SQLAlchemy
-    # Supabase (PostgreSQL) requiere SSL para conectarse de forma segura.
+    # Conexión a Supabase (PostgreSQL) que requiere SSL para conectarse de forma segura.
     engine = sa.create_engine(
-        db_url,
-        connect_args={"sslmode": "require"} if "supabase.com" in db_url or "pooler.supabase.com" in db_url else {}
+        supabase_url,
+        connect_args={"sslmode": "require"} if "supabase.com" in supabase_url or "pooler.supabase.com" in supabase_url else {}
     )
     return engine.connect()
 
