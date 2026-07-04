@@ -183,9 +183,12 @@ class LogRepository:
     ) -> None:
         """Inserta un unico log crudo en la base de conocimientos."""
         import os
-        import streamlit as st
-        is_cloud_db = ("TURSO_DATABASE_URL" in st.secrets or "SUPABASE_URL" in st.secrets or
-                      os.getenv("TURSO_DATABASE_URL") or os.getenv("SUPABASE_URL"))
+        try:
+            import streamlit as st
+            has_secrets = "TURSO_DATABASE_URL" in st.secrets or "SUPABASE_URL" in st.secrets
+        except Exception:
+            has_secrets = False
+        is_cloud_db = has_secrets or bool(os.getenv("TURSO_DATABASE_URL")) or bool(os.getenv("SUPABASE_URL"))
         if is_cloud_db:
             return  # No guardar logs individuales en la nube (ahorro de cuota de escritura/espacio)
 
@@ -212,9 +215,12 @@ class LogRepository:
             return 0
 
         import os
-        import streamlit as st
-        is_cloud_db = ("TURSO_DATABASE_URL" in st.secrets or "SUPABASE_URL" in st.secrets or
-                      os.getenv("TURSO_DATABASE_URL") or os.getenv("SUPABASE_URL"))
+        try:
+            import streamlit as st
+            has_secrets = "TURSO_DATABASE_URL" in st.secrets or "SUPABASE_URL" in st.secrets
+        except Exception:
+            has_secrets = False
+        is_cloud_db = has_secrets or bool(os.getenv("TURSO_DATABASE_URL")) or bool(os.getenv("SUPABASE_URL"))
         if is_cloud_db:
             return len(records)  # Simular inserción exitosa para no romper el pipeline en la nube
 
