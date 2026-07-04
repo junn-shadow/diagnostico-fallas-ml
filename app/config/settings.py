@@ -26,7 +26,22 @@ if _env_path.exists():
     except Exception:
         pass
 
-HF_API_TOKEN = os.getenv("HF_API_TOKEN", "")
+import streamlit as st
+
+def _get_api_token():
+    val = None
+    if "HF_API_TOKEN" in os.environ:
+        val = os.environ["HF_API_TOKEN"]
+    else:
+        try:
+            val = st.secrets.get("HF_API_TOKEN")
+        except Exception:
+            pass
+    if val:
+        return str(val).strip().strip("'").strip('"')
+    return ""
+
+HF_API_TOKEN = _get_api_token()
 
 # Ruta del archivo SQLite. Se puede sobrescribir con la variable SQLITE_DB_PATH en .env
 # Por defecto usa la ruta definida en paths.py (incidents.sqlite3).
