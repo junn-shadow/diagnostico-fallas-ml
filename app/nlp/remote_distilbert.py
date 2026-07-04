@@ -17,7 +17,7 @@ class RemoteSemanticEmbedder:
 
     def __init__(self, model_name: str = DISTILBERT_MODEL_NAME, timeout: int = 35):
         self.model_name = model_name
-        self.api_url = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{model_name}"
+        self.api_url = f"https://api-inference.huggingface.co/models/{model_name}"
         self.headers = (
             {"Authorization": f"Bearer {HF_API_TOKEN}"} if HF_API_TOKEN else {}
         )
