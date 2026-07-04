@@ -263,7 +263,7 @@ if st.session_state.get("is_historical_view", False) and "last_result" in st.ses
 
 
 with st.sidebar:
-    uploaded = st.file_uploader("Fuente de logs", type=["log", "txt"])
+    uploaded = st.file_uploader("Fuente de logs", type=["log", "txt", "csv"])
     is_file_too_large = False
     if uploaded is not None:
         file_size_mb = uploaded.size / (1024 * 1024)
@@ -361,7 +361,8 @@ with st.sidebar:
 def resolve_log_path():
     if uploaded is not None:
         with st.spinner("Guardando archivo temporal..."):
-            temp = tempfile.NamedTemporaryFile(delete=False, suffix=".log")
+            file_ext = Path(uploaded.name).suffix
+            temp = tempfile.NamedTemporaryFile(delete=False, suffix=file_ext if file_ext else ".log")
             temp.write(uploaded.getbuffer())
             temp.close()
             return Path(temp.name)
