@@ -1300,7 +1300,7 @@ with tab_history:
 
 
                     # Descargar reporte histórico
-                    st.markdown("##### 📥 Exportar esta ejecución histórica")
+                    st.markdown("##### Exportar esta ejecución histórica")
 
                     hist_key = f"hist_reports_{sel_run_id}"
                     if hist_key not in st.session_state:

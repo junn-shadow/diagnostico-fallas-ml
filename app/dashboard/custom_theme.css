@@ -697,17 +697,27 @@ button[data-testid="stBaseButton-primary"]:hover {
 }
 
 /* ─── Streamlit Running Overlay & Custom Spinners ────────────────────────── */
-.stApp {
-    opacity: 1 !important;
-}
-[data-testid="stAppViewBlockContainer"] {
-    opacity: 1 !important;
-    filter: none !important;
-}
+.stApp,
+[data-testid="stAppViewContainer"],
+[data-testid="stAppViewBlockContainer"],
+[data-testid="stHeader"],
 [data-testid="stMain"],
-[data-testid="stMain"] > div {
+[data-testid="stSidebar"],
+[data-testid="stSidebarContent"] {
     opacity: 1 !important;
     filter: none !important;
+}
+
+/* Forzar que cualquier elemento "stale" o en recarga no pierda color ni se vuelva opaco */
+*[data-stale="true"],
+.st-emotion-cache-16txtl3, 
+.st-emotion-cache-1er4kvo,
+div[class*="st-emotion-cache"] {
+    transition: opacity 0s !important;
+}
+[data-stale="true"] {
+    opacity: 1 !important;
+    filter: grayscale(0%) !important;
 }
 
 /* Spinner Custom Color */
