@@ -11,39 +11,52 @@ logger = logging.getLogger(__name__)
 # Base de conocimiento semántica para diagnóstico de fallas comunes
 SEMANTIC_KNOWLEDGE_BASE = [
     {
-        "pattern": "Database connection timeout pool exhausted sql query failure socket error database unreachable connection aborted",
-        "root_cause": "Posible caida o saturacion de base de datos",
-        "recommendation": "Verificar disponibilidad del motor, pool de conexiones y latencia hacia la BD.",
+        "pattern": "Database connection timeout pool exhausted sql query failure socket error database unreachable deadlock",
+        "root_cause": "Caída, saturación o interbloqueo en Base de Datos",
+        "recommendation": "Verificar disponibilidad del motor SQL, estado del pool de conexiones y métricas de latencia.",
     },
     {
-        "pattern": "Network connection refused port unreachable host disconnected DNS lookup failed connection timeout packet loss link down",
-        "root_cause": "Posible problema de red o servicio no disponible",
-        "recommendation": "Validar conectividad, DNS, firewall y estado del servicio remoto.",
+        "pattern": "Network connection refused port unreachable host disconnected tcp udp ospf bgp ftp timeout link down interface",
+        "root_cause": "Falla de red, protocolo inestable o pérdida de conexión",
+        "recommendation": "Validar conectividad física/lógica, estado del protocolo (OSPF/BGP), firewall y puertos.",
     },
     {
-        "pattern": "Disk space full write failed filesystem read-only partition capacity limit out of disk memory write disk error write failed",
-        "root_cause": "Posible falla de disco o falta de espacio",
-        "recommendation": "Revisar SMART/IO, espacio libre y errores del sistema de archivos.",
+        "pattern": "Disk space full write failed filesystem read-only partition capacity limit out of disk io error",
+        "root_cause": "Falla de disco, saturación de I/O o falta de espacio",
+        "recommendation": "Revisar logs SMART, espacio libre, inodes y posibles errores en el sistema de archivos.",
     },
     {
-        "pattern": "Out of memory error HeapSpace high CPU usage process killed server overload system out of memory high ram load",
-        "root_cause": "Posible saturacion de recursos del servidor",
-        "recommendation": "Inspeccionar procesos, consumo CPU/RAM y limites del contenedor o servidor.",
+        "pattern": "Out of memory error HeapSpace high CPU usage process killed server overload segfault system out of memory",
+        "root_cause": "Saturación de CPU/RAM o proceso finalizado por OOM",
+        "recommendation": "Inspeccionar picos de consumo (CPU/RAM), límites del SO (OOM Killer) y procesos zombis.",
     },
     {
-        "pattern": "Access denied unauthorized credentials expired token invalid login forbidden permission error unauthorized access credentials failure",
-        "root_cause": "Posible problema de autenticacion o permisos",
-        "recommendation": "Revisar credenciales, permisos, tokens vencidos y cambios recientes de acceso.",
+        "pattern": "Access denied unauthorized credentials expired token invalid login forbidden permission error password failure",
+        "root_cause": "Fallo de autenticación o permisos insuficientes",
+        "recommendation": "Revisar rotación de credenciales, tokens vencidos, políticas IAM y bloqueos de IP.",
     },
+    {
+        "pattern": "Syntax error invalid configuration missing key parse failure yaml format error",
+        "root_cause": "Error en configuración o formato inválido",
+        "recommendation": "Auditar los cambios recientes en archivos de configuración y validar sintaxis.",
+    },
+    {
+        "pattern": "Service crashed daemon stopped fatal exit core dumped restart failed",
+        "root_cause": "Caída crítica de servicio o demonio (Crash)",
+        "recommendation": "Revisar los core dumps, logs del sistema (journalctl) e intentar reiniciar el servicio.",
+    }
 ]
 
 # Recomendaciones tradicionales basadas en reglas para mapeo rápido
 RECOMMENDATIONS = {
-    "base de datos": "Verificar disponibilidad del motor, pool de conexiones y latencia hacia la BD.",
-    "red": "Validar conectividad, DNS, firewall y estado del servicio remoto.",
-    "disco": "Revisar SMART/IO, espacio libre y errores del sistema de archivos.",
-    "recursos": "Inspeccionar procesos, consumo CPU/RAM y limites del contenedor o servidor.",
-    "autenticacion": "Revisar credenciales, permisos, tokens vencidos y cambios recientes de acceso.",
+    "base de datos": "Verificar disponibilidad del motor SQL, estado del pool de conexiones y métricas de latencia.",
+    "red": "Validar conectividad física/lógica, estado del protocolo (OSPF/BGP), firewall y puertos.",
+    "disco": "Revisar logs SMART, espacio libre, inodes y posibles errores en el sistema de archivos.",
+    "recursos": "Inspeccionar picos de consumo (CPU/RAM), límites del SO (OOM Killer) y procesos zombis.",
+    "cpu": "Inspeccionar picos de consumo (CPU/RAM), límites del SO (OOM Killer) y procesos zombis.",
+    "autenticacion": "Revisar rotación de credenciales, tokens vencidos, políticas IAM y bloqueos de IP.",
+    "configuración": "Auditar los cambios recientes en archivos de configuración y validar sintaxis.",
+    "servicio": "Revisar los core dumps, logs del sistema (journalctl) e intentar reiniciar el servicio.",
 }
 
 
@@ -52,8 +65,9 @@ def recommend_action(root_cause: str) -> str:
     text = root_cause.lower()
     for key, recommendation in RECOMMENDATIONS.items():
         if key in text:
-            return recommendation
-    return "Revisar logs cercanos en el tiempo, plantilla del evento y cambios recientes del despliegue."
+            return RECOMMENDATIONS[key]
+
+    return "Realizar un análisis de trazas para identificar el origen de este comportamiento anómalo."
 
 
 def _get_embedder(force_backend: str = None):
