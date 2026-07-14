@@ -340,13 +340,15 @@ button[role="tab"] {
     padding: 0.5rem 0.9rem !important;
 }
 
+/* Inactive tabs text elements */
 [data-testid="stTabs"] [data-testid="stTab"] button *,
 [data-testid="stTabs"] button *,
 button[data-testid="stBaseButton-Tab"] *,
 button[role="tab"] * {
-    color: inherit !important;
+    color: var(--text-muted) !important;
 }
 
+/* Active tabs text elements */
 [data-testid="stTabs"] button[aria-selected="true"],
 button[data-testid="stBaseButton-Tab"][aria-selected="true"],
 button[role="tab"][aria-selected="true"] {
@@ -355,12 +357,25 @@ button[role="tab"][aria-selected="true"] {
     font-weight: 600 !important;
 }
 
+[data-testid="stTabs"] button[aria-selected="true"] *,
+button[data-testid="stBaseButton-Tab"][aria-selected="true"] *,
+button[role="tab"][aria-selected="true"] * {
+    color: var(--accent) !important;
+}
+
+/* Hover tabs text elements */
 [data-testid="stTabs"] button:hover:not([aria-selected="true"]),
 button[data-testid="stBaseButton-Tab"]:hover:not([aria-selected="true"]),
 button[role="tab"]:hover:not([aria-selected="true"]) {
     color: var(--text-main) !important;
     background: rgba(14, 165, 233, 0.05) !important;
     border-radius: 4px 4px 0 0 !important;
+}
+
+[data-testid="stTabs"] button:hover:not([aria-selected="true"]) *,
+button[data-testid="stBaseButton-Tab"]:hover:not([aria-selected="true"]) *,
+button[role="tab"]:hover:not([aria-selected="true"]) * {
+    color: var(--text-main) !important;
 }
 
 /* Animaciones Fluidas de Entrada al Cambiar de Pestaña */
