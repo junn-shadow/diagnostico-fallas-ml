@@ -62,8 +62,8 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
-    is_dark_mode = st.toggle("Modo Oscuro", value=True, help="Alterna entre tema claro y oscuro.")
-    focus_mode = st.toggle("Modo Enfoque", value=False, help="Oculta descripciones secundarias y notas para centrar la atención en los datos.")
+    is_dark_mode = st.toggle("Modo Oscuro", value=True, key="is_dark_mode", help="Alterna entre tema claro y oscuro.")
+    focus_mode = st.toggle("Modo Enfoque", value=False, key="focus_mode", help="Oculta descripciones secundarias y notas para centrar la atención en los datos.")
 
 
 if is_dark_mode:
@@ -1473,6 +1473,7 @@ with tab_history:
                         key=f"del_btn_{sel_run_id}",
                     ):
                         delete_run(sel_run_id)
+                        st.cache_data.clear()
                         st.success(
                             f"Ejecución '{sel_run_id}' eliminada correctamente."
                         )

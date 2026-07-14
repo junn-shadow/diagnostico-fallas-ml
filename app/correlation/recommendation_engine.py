@@ -67,7 +67,7 @@ def recommend_action(root_cause: str) -> str:
         if key in text:
             return RECOMMENDATIONS[key]
 
-    return "Realizar un análisis de trazas para identificar el origen de este comportamiento anómalo."
+    return "Revisar logs cercanos y realizar un análisis de trazas para identificar el origen de este comportamiento anómalo."
 
 
 def _get_embedder(force_backend: str = None):

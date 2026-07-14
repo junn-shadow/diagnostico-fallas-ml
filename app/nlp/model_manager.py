@@ -12,6 +12,9 @@ class ModelStatus:
     detail: str
 
 
+import streamlit as st
+
+@st.cache_data(show_spinner=False, ttl=300)
 def check_distilbert_status(model_name: str = DISTILBERT_MODEL_NAME) -> ModelStatus:
     """Check DistilBERT availability: remote API (preferred) or local cache."""
 

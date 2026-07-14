@@ -51,4 +51,6 @@ def init_db() -> None:
                 log_source TEXT
             )
         """))
+        conn.execute(sa.text("CREATE INDEX IF NOT EXISTS idx_incidents_run_id ON incidents(run_id)"))
+        conn.execute(sa.text("CREATE INDEX IF NOT EXISTS idx_raw_logs_source ON raw_logs(source)"))
         conn.commit()

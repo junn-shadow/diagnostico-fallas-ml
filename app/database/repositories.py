@@ -1,4 +1,5 @@
 import pandas as pd
+import streamlit as st
 
 from app.database.connection import get_connection
 from app.database.sqlite_db import init_db
@@ -56,6 +57,7 @@ def save_incidents(
     return len(incidents)
 
 
+@st.cache_data(ttl=15, show_spinner=False)
 def list_incidents(run_id: str | None = None, limit: int = 200) -> pd.DataFrame:
     init_db()
     import sqlalchemy as sa
@@ -74,6 +76,7 @@ def list_incidents(run_id: str | None = None, limit: int = 200) -> pd.DataFrame:
             )
 
 
+@st.cache_data(ttl=15, show_spinner=False)
 def list_runs() -> pd.DataFrame:
     """
     Retorna la lista de ejecuciones históricas con estadísticas rápidas.
@@ -125,6 +128,7 @@ def search_all_incidents(query: str, limit: int = 500) -> pd.DataFrame:
         )
 
 
+@st.cache_data(ttl=15, show_spinner=False)
 def get_incident_summary(run_id: str | None = None) -> dict:
     """
     Retorna un diccionario con estadísticas agregadas de los incidentes.
@@ -183,12 +187,15 @@ class LogRepository:
     ) -> None:
         """Inserta un unico log crudo en la base de conocimientos."""
         import os
+        import sys
         try:
             import streamlit as st
             has_secrets = "TURSO_DATABASE_URL" in st.secrets or "SUPABASE_URL" in st.secrets
         except Exception:
             has_secrets = False
         is_cloud_db = has_secrets or bool(os.getenv("TURSO_DATABASE_URL")) or bool(os.getenv("SUPABASE_URL"))
+        if "pytest" in sys.modules:
+            is_cloud_db = False
         if is_cloud_db:
             return  # No guardar logs individuales en la nube (ahorro de cuota de escritura/espacio)
 
@@ -215,12 +222,15 @@ class LogRepository:
             return 0
 
         import os
+        import sys
         try:
             import streamlit as st
             has_secrets = "TURSO_DATABASE_URL" in st.secrets or "SUPABASE_URL" in st.secrets
         except Exception:
             has_secrets = False
         is_cloud_db = has_secrets or bool(os.getenv("TURSO_DATABASE_URL")) or bool(os.getenv("SUPABASE_URL"))
+        if "pytest" in sys.modules:
+            is_cloud_db = False
         if is_cloud_db:
             return len(records)  # Simular inserción exitosa para no romper el pipeline en la nube
 

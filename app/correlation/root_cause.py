@@ -13,11 +13,11 @@ ROOT_CAUSE_RULES = [
     ),
     (
         ("cpu", "memory", "oom", "usage high", "heap", "segfault", "killed"),
-        "Saturación de CPU/RAM o proceso finalizado por OOM",
+        "Saturacion de recursos (CPU/RAM) o proceso finalizado por OOM",
     ),
     (
         ("auth", "login", "permission", "denied", "unauthorized", "invalid token", "password"),
-        "Fallo de autenticación o permisos insuficientes",
+        "Fallo de autenticacion o permisos insuficientes",
     ),
     (
         ("config", "syntax", "invalid value", "missing key", "parse error", "yaml"),
@@ -35,4 +35,4 @@ def infer_root_cause(message: str) -> str:
     for keywords, cause in ROOT_CAUSE_RULES:
         if any(keyword in text for keyword in keywords):
             return cause
-    return "Comportamiento atípico no clasificado"
+    return "Anomalia detectada (comportamiento atípico no clasificado)"

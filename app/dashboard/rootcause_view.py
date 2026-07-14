@@ -19,15 +19,9 @@ COLOR_MAP = {
 }
 
 
-def render_root_causes(logs: pd.DataFrame) -> None:
-    st.subheader("🧠 Mapa de Causas Raíz")
-    st.markdown(
-        '<p class="section-note">Hipótesis generadas automáticamente por reglas de correlación '
-        "semántica. Las causas con mayor repetición son los focos principales de inestabilidad.</p>",
-        unsafe_allow_html=True,
-    )
-
-    summary = (
+@st.cache_data(show_spinner=False)
+def _aggregate_root_causes(logs: pd.DataFrame) -> pd.DataFrame:
+    return (
         logs.groupby("root_cause")
         .agg(
             cantidad=("line_id", "count"),
@@ -37,6 +31,16 @@ def render_root_causes(logs: pd.DataFrame) -> None:
         .reset_index()
         .sort_values("cantidad", ascending=False)
     )
+
+def render_root_causes(logs: pd.DataFrame) -> None:
+    st.subheader("Mapa de Causas Raíz")
+    st.markdown(
+        '<p class="section-note">Hipótesis generadas automáticamente por reglas de correlación '
+        "semántica. Las causas con mayor repetición son los focos principales de inestabilidad.</p>",
+        unsafe_allow_html=True,
+    )
+
+    summary = _aggregate_root_causes(logs)
 
     if summary.empty:
         st.info("No hay datos de causas raíz disponibles.")

@@ -855,3 +855,19 @@ div.stSpinner > div {
     }
 }
 
+/* ─── Contraste y Estilos de Alertas en Modo Claro/Oscuro ────────────────── */
+div[data-testid="stNotification"],
+div[data-testid="stAlert"],
+div[class*="stAlert"] {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--card-shadow) !important;
+}
+
+div[data-testid="stNotification"] *,
+div[data-testid="stAlert"] *,
+div[class*="stAlert"] * {
+    color: var(--text-main) !important;
+}
+
