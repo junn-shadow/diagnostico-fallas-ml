@@ -328,7 +328,9 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 
 /* ─── Pestañas y Transiciones ───────────────────────────────────────────── */
 [data-testid="stTabs"] [data-testid="stTab"] button,
-[data-testid="stTabs"] button {
+[data-testid="stTabs"] button,
+button[data-testid="stBaseButton-Tab"],
+button[role="tab"] {
     font-family: 'Outfit', sans-serif !important;
     font-weight: 500 !important;
     font-size: 0.82rem !important;
@@ -338,13 +340,24 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     padding: 0.5rem 0.9rem !important;
 }
 
-[data-testid="stTabs"] button[aria-selected="true"] {
+[data-testid="stTabs"] [data-testid="stTab"] button *,
+[data-testid="stTabs"] button *,
+button[data-testid="stBaseButton-Tab"] *,
+button[role="tab"] * {
+    color: inherit !important;
+}
+
+[data-testid="stTabs"] button[aria-selected="true"],
+button[data-testid="stBaseButton-Tab"][aria-selected="true"],
+button[role="tab"][aria-selected="true"] {
     color: var(--accent) !important;
     border-bottom: 2px solid var(--accent) !important;
     font-weight: 600 !important;
 }
 
-[data-testid="stTabs"] button:hover:not([aria-selected="true"]) {
+[data-testid="stTabs"] button:hover:not([aria-selected="true"]),
+button[data-testid="stBaseButton-Tab"]:hover:not([aria-selected="true"]),
+button[role="tab"]:hover:not([aria-selected="true"]) {
     color: var(--text-main) !important;
     background: rgba(14, 165, 233, 0.05) !important;
     border-radius: 4px 4px 0 0 !important;
