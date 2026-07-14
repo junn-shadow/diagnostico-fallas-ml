@@ -327,10 +327,9 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 
 /* ─── Pestañas y Transiciones ───────────────────────────────────────────── */
-[data-testid="stTabs"] [data-testid="stTab"] button,
-[data-testid="stTabs"] button,
-button[data-testid="stBaseButton-Tab"],
-button[role="tab"] {
+/* Selector amplio para cualquier contenedor de pestaña, sin importar si es div o button */
+[data-testid="stTabs"] [role="tab"],
+[data-baseweb="tab"] {
     font-family: 'Outfit', sans-serif !important;
     font-weight: 500 !important;
     font-size: 0.82rem !important;
@@ -338,43 +337,38 @@ button[role="tab"] {
     border-bottom: 2px solid transparent !important;
     transition: var(--transition) !important;
     padding: 0.5rem 0.9rem !important;
+    background-color: transparent !important;
 }
 
 /* Inactive tabs text elements */
-[data-testid="stTabs"] [data-testid="stTab"] button *,
-[data-testid="stTabs"] button *,
-button[data-testid="stBaseButton-Tab"] *,
-button[role="tab"] * {
+[data-testid="stTabs"] [role="tab"] *,
+[data-baseweb="tab"] * {
     color: var(--text-muted) !important;
 }
 
 /* Active tabs text elements */
-[data-testid="stTabs"] button[aria-selected="true"],
-button[data-testid="stBaseButton-Tab"][aria-selected="true"],
-button[role="tab"][aria-selected="true"] {
+[data-testid="stTabs"] [role="tab"][aria-selected="true"],
+[data-baseweb="tab"][aria-selected="true"] {
     color: var(--accent) !important;
     border-bottom: 2px solid var(--accent) !important;
     font-weight: 600 !important;
 }
 
-[data-testid="stTabs"] button[aria-selected="true"] *,
-button[data-testid="stBaseButton-Tab"][aria-selected="true"] *,
-button[role="tab"][aria-selected="true"] * {
+[data-testid="stTabs"] [role="tab"][aria-selected="true"] *,
+[data-baseweb="tab"][aria-selected="true"] * {
     color: var(--accent) !important;
 }
 
 /* Hover tabs text elements */
-[data-testid="stTabs"] button:hover:not([aria-selected="true"]),
-button[data-testid="stBaseButton-Tab"]:hover:not([aria-selected="true"]),
-button[role="tab"]:hover:not([aria-selected="true"]) {
+[data-testid="stTabs"] [role="tab"]:hover:not([aria-selected="true"]),
+[data-baseweb="tab"]:hover:not([aria-selected="true"]) {
     color: var(--text-main) !important;
     background: rgba(14, 165, 233, 0.05) !important;
     border-radius: 4px 4px 0 0 !important;
 }
 
-[data-testid="stTabs"] button:hover:not([aria-selected="true"]) *,
-button[data-testid="stBaseButton-Tab"]:hover:not([aria-selected="true"]) *,
-button[role="tab"]:hover:not([aria-selected="true"]) * {
+[data-testid="stTabs"] [role="tab"]:hover:not([aria-selected="true"]) *,
+[data-baseweb="tab"]:hover:not([aria-selected="true"]) * {
     color: var(--text-main) !important;
 }
 
